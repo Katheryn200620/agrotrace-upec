@@ -1,0 +1,56 @@
+{% extends "base.html" %}{% load agro %}
+{% block contenido %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <p class="text-secundario mb-0">{% if es_admin_general %}Todos los registros del sistema{% else %}Registros a su cargo{% endif %} · {{ total }} en total</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url_con exportar='csv' %}" class="btn btn-secundario btn-sm"><i class="bi bi-download me-1"></i>Exportar</a>
+    {% if puede_crear %}<a href="{% url url_base|add:'_crear' %}" class="btn btn-primario btn-sm"><i class="bi bi-plus-lg me-1"></i>Nuevo</a>{% endif %}
+  </div>
+</div>
+{% if ayuda %}<div class="ayuda mb-3"><i class="bi bi-info-circle me-1"></i>{{ ayuda }}</div>{% endif %}
+<form class="tarjeta py-2 mb-3 d-flex flex-wrap gap-2 align-items-center" method="get" data-autoenvio>
+  <div class="flex-grow-1" style="min-width:220px;position:relative">
+    <i class="bi bi-search position-absolute text-secundario" style="left:.7rem;top:50%;transform:translateY(-50%)"></i>
+    <input class="form-control" style="padding-left:2rem" name="q" value="{{ q }}" placeholder="Buscar…">
+  </div>
+  {% for campo, etiqueta, opciones, actual in filtros %}
+    <select name="{{ campo }}" class="form-select" style="width:auto" aria-label="{{ etiqueta }}">
+      <option value="">{{ etiqueta }}: todos</option>
+      {% for v, t in opciones %}<option value="{{ v }}" {% if v == actual %}selected{% endif %}>{{ t }}</option>{% endfor %}
+    </select>
+  {% endfor %}
+  <button class="btn btn-secundario">Buscar</button>
+  {% if q or params %}<a href="?" class="btn btn-link btn-sm text-secundario">Limpiar</a>{% endif %}
+</form>
+<div class="tabla-contenedor">
+  <div class="table-responsive">
+    <table class="table tabla">
+      <thead><tr>{% for h in encabezados %}<th>{{ h }}</th>{% endfor %}<th class="text-end">Acciones</th></tr></thead>
+      <tbody>
+      {% for f in filas %}
+        <tr data-href="{% url url_base|add:'_detalle' f.obj.pk %}">
+          {% for c in f.celdas %}<td>{% if forloop.first %}<strong>{{ c|valor }}</strong>{% else %}{{ c|etiqueta }}{% endif %}</td>{% endfor %}
+          <td class="text-end text-nowrap">
+            <a href="{% url url_base|add:'_detalle' f.obj.pk %}" class="btn btn-sm btn-secundario">Ver</a>
+            {% if f.editar %}<a href="{% url url_base|add:'_editar' f.obj.pk %}" class="btn btn-sm btn-secundario">Editar</a>{% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="{{ encabezados|length|add:1 }}"><div class="vacio"><i class="bi bi-inbox"></i>No hay registros{% if q %} que coincidan con «{{ q }}»{% endif %}.</div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% if pagina.has_other_pages %}
+<nav class="d-flex justify-content-between align-items-center mt-3 small text-secundario">
+  <span>Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}</span>
+  <div class="btn-group">
+    {% if pagina.has_previous %}<a class="btn btn-sm btn-secundario" href="{% url_con page=pagina.previous_page_number %}"><i class="bi bi-chevron-left"></i> Anterior</a>{% endif %}
+    {% if pagina.has_next %}<a class="btn btn-sm btn-secundario" href="{% url_con page=pagina.next_page_number %}">Siguiente <i class="bi bi-chevron-right"></i></a>{% endif %}
+  </div>
+</nav>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block contenido %}
+<header class="encabezado-area"><div class="d-flex gap-3"><span class="sello-area"><i class="bi bi-braces"></i></span>
+  <div><div class="area-etq">Área 12 · Administración del sistema</div><h2>API REST v1</h2>
+  <p>Permite que otros sistemas (Odoo, n8n, una app móvil) lean y registren datos con las mismas reglas de permisos de la web.</p></div></div>
+  <a href="/api/v1/" class="btn btn-primario btn-sm" target="_blank"><i class="bi bi-box-arrow-up-right me-1"></i>Abrir la API navegable</a></header>
+<div class="row g-3">
+  <div class="col-lg-7"><div class="tarjeta h-100"><div class="tarjeta-titulo"><h2><i class="bi bi-list-ul"></i> Recursos</h2></div>
+    <div class="table-responsive"><table class="table tabla"><thead><tr><th>Ruta</th><th>Métodos</th><th>Área</th></tr></thead><tbody>
+      <tr><td><code>/api/v1/productores/</code></td><td>GET, POST, PATCH, DELETE</td><td>Productores</td></tr>
+      <tr><td><code>/api/v1/parcelas/</code> · <code>/labores/</code></td><td>GET, POST, PATCH, DELETE</td><td>Parcelas</td></tr>
+      <tr><td><code>/api/v1/productos/</code></td><td>GET, POST, PATCH, DELETE</td><td>Productos</td></tr>
+      <tr><td><code>/api/v1/cosechas/</code> · <code>/recepciones/</code> · <code>/clasificaciones/</code></td><td>GET, POST, PATCH, DELETE</td><td>Cosechas</td></tr>
+      <tr><td><code>/api/v1/lotes/</code></td><td>GET, POST, PATCH</td><td>Lotes</td></tr>
+      <tr><td><code>/api/v1/transportistas/</code> · <code>/despachos/</code></td><td>GET, POST, PATCH</td><td>Transporte</td></tr>
+      <tr><td><code>/api/v1/clientes/</code> · <code>/ventas/</code></td><td>GET, POST, PATCH</td><td>Comercial</td></tr>
+      <tr><td><code>/api/v1/eventos/</code></td><td>GET</td><td>Trazabilidad (solo lectura)</td></tr>
+      <tr><td><code>/api/v1/trazabilidad/&lt;código&gt;/</code></td><td>GET</td><td>Procedencia completa de un lote</td></tr>
+      <tr><td><code>/api/v1/indicadores/</code></td><td>GET</td><td>Administrador y consulta</td></tr>
+    </tbody></table></div></div></div>
+  <div class="col-lg-5"><div class="tarjeta mb-3"><div class="tarjeta-titulo"><h2><i class="bi bi-key"></i> Obtener un token</h2></div>
+    <pre class="codigo">curl -X POST http://127.0.0.1:8000/api/v1/token/ \
+  -d "username=comercial" -d "password=upec2026"</pre>
+    <p class="small text-secundario mb-1">Respuesta: <code>{"token": "9f1c…"}</code>. Luego envíe la cabecera:</p>
+    <pre class="codigo">Authorization: Token 9f1c…</pre></div>
+  <div class="tarjeta"><div class="tarjeta-titulo"><h2><i class="bi bi-shield-check"></i> Reglas</h2></div>
+    <ul class="small mb-0"><li>Cada usuario ve y modifica solo lo que su área le permite (403 si no).</li>
+      <li>Las altas se validan con los mismos formularios de la web (400 con el detalle del error).</li>
+      <li>Los eventos de trazabilidad y la auditoría no se modifican.</li>
+      <li>Filtros: <code>?q=texto</code>, <code>?estado=…</code>, paginación <code>?page=2&amp;tamano=50</code>.</li>
+      <li>La documentación completa está en <code>Documentacion_API.md</code>.</li></ul></div></div>
+</div>
+{% endblock %}

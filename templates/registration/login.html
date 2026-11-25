@@ -1,0 +1,43 @@
+{% load static %}<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ingresar · AgroTrace-UPEC</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/estilos.css' %}?v=20261125">
+  {% include "comun/tema_inicial.html" %}
+</head>
+<body>
+<div class="ingreso">
+  <section class="lado">
+    {% include "comun/paisaje.html" %}
+    <div class="marca-ingreso"><span class="logo"><i class="bi bi-flower3"></i></span><strong>AgroTrace-UPEC</strong></div>
+    <div>
+      <h1>Procedencia digital de productos hortofrutícolas</h1>
+      <p>Cada etapa registrada, desde la parcela en el Carchi hasta el cliente, con códigos GS1, historial de trazabilidad y consulta por QR.</p>
+      <div class="ruta mt-3">
+        <span><i class="bi bi-geo-alt"></i> Parcela</span><i class="bi bi-chevron-right"></i>
+        <span><i class="bi bi-basket"></i> Cosecha</span><i class="bi bi-chevron-right"></i>
+        <span><i class="bi bi-box-seam"></i> Lote</span><i class="bi bi-chevron-right"></i>
+        <span><i class="bi bi-truck"></i> Destino</span>
+      </div>
+    </div>
+    <small class="creditos">Universidad Politécnica Estatal del Carchi · Carrera de Logística y Transporte</small>
+  </section>
+  <section class="caja">
+    <form method="post" novalidate>{% csrf_token %}
+      <h2 class="h4 mb-1">Iniciar sesión</h2>
+      <p class="text-secundario small mb-4">Ingrese con la cuenta que le asignó el administrador general.</p>
+      {% for m in messages %}<div class="alert alert-{% if m.tags == 'error' %}danger{% else %}{{ m.tags }}{% endif %} py-2 small">{{ m }}</div>{% endfor %}
+      {% if form.non_field_errors %}<div class="alert alert-danger py-2 small">{{ form.non_field_errors.0 }}</div>{% endif %}
+      <div class="mb-3"><label class="form-label" for="id_username">Usuario</label>{{ form.username }}</div>
+      <div class="mb-4"><label class="form-label" for="id_password">Contraseña</label>{{ form.password }}</div>
+      <button class="btn btn-primario w-100 py-2">Ingresar</button>
+      <hr class="my-4">
+      <a href="{% url 'consulta' %}" class="acceso justify-content-center"><i class="bi bi-qr-code-scan"></i> Consultar la procedencia de un lote</a>
+    </form>
+  </section>
+</div>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="mb-3"><a href="{% url 'asistente:agentes' %}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Agentes guiados</a></div>
+<div class="tarjeta" style="max-width: 760px">
+  <div class="d-flex gap-3 align-items-start mb-3"><span class="sello-area"><i class="bi bi-qr-code-scan"></i></span>
+    <div><h2 class="h4 mb-1">Consultar la trazabilidad de un lote</h2><p class="text-secundario mb-0">Dos pasos: identifique el lote y revise su recorrido.</p></div></div>
+  <ol class="pasos-agente"><li class="activo"><span>1</span>Identificar el lote</li><li><span>2</span>Ver procedencia</li></ol>
+  <div class="ayuda mb-3"><i class="bi bi-info-circle me-1"></i>El código está en la etiqueta del producto, debajo del QR: empieza con H y tiene 8 números (ej. H26112201). También puede escribir el código de una cosecha.</div>
+  <form action="{% url 'buscar' %}" method="get" class="d-flex gap-2 flex-wrap" data-form-traz>
+    <input name="q" class="form-control" style="max-width:280px" placeholder="H26112201" required aria-label="Código del lote" data-codigo>
+    <button class="btn btn-primario"><i class="bi bi-search me-1"></i>Consultar</button>
+    <button type="button" class="btn btn-secundario" data-camara><i class="bi bi-camera me-1"></i>Escanear con la cámara</button>
+    <button type="button" class="btn btn-secundario" data-voz><i class="bi bi-mic me-1"></i>Dictar</button>
+  </form>
+  <video data-video playsinline muted hidden class="camara-qr mt-3"></video>
+  <p class="small text-secundario mt-2 mb-0" data-camara-estado></p>
+  <hr>
+  <p class="small mb-0"><strong>Paso 2:</strong> se abrirá la ficha del lote con su origen (productor, parcela, cosecha), los eventos registrados, los despachos y el porcentaje de trazabilidad completa. Si su área no consulta lotes internos, verá la ficha pública del QR.</p>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  const btn = document.querySelector("[data-camara]"), video = document.querySelector("[data-video]"), est = document.querySelector("[data-camara-estado]");
+  const campo = document.querySelector("[data-codigo]");
+  if (!("BarcodeDetector" in window)) { btn.disabled = true; btn.title = "Este navegador no lee códigos QR con la cámara (pruebe Chrome en Android)"; return; }
+  btn.addEventListener("click", async () => {
+    try {
+      const flujo = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      video.srcObject = flujo; video.hidden = false; await video.play(); est.textContent = "Apunte la cámara al QR de la etiqueta…";
+      const det = new BarcodeDetector({ formats: ["qr_code"] });
+      const leer = async () => {
+        const codigos = await det.detect(video).catch(() => []);
+        if (codigos.length) {
+          flujo.getTracks().forEach(t => t.stop()); video.hidden = true;
+          const v = codigos[0].rawValue, m = v.match(/\/10\/([^/?#]+)/);
+          campo.value = m ? decodeURIComponent(m[1]) : v; est.textContent = "Código leído: " + campo.value;
+          campo.form.submit(); return;
+        }
+        requestAnimationFrame(leer);
+      };
+      leer();
+    } catch (e) { est.textContent = "No se pudo abrir la cámara: permita el acceso o escriba el código."; }
+  });
+})();
+</script>
+{% endblock %}

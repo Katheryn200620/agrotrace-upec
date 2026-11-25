@@ -1,0 +1,18 @@
+{% if user.is_authenticated %}
+<button type="button" class="chat-boton" data-chat-abrir aria-label="Abrir el asistente virtual" title="Asistente virtual"><i class="bi bi-chat-dots-fill"></i></button>
+<section class="chat-panel" data-chat-panel hidden aria-label="Asistente virtual">
+  <header><span class="chat-avatar"><i class="bi bi-flower3"></i></span><div><strong>Asistente AgroTrace</strong><small>Responde con los datos que su cuenta puede ver</small></div>
+    <a href="{% url 'asistente:chat' %}" class="chat-icono" title="Abrir en pantalla completa" aria-label="Pantalla completa"><i class="bi bi-arrows-angle-expand"></i></a>
+    <button type="button" class="chat-icono" data-chat-cerrar aria-label="Cerrar"><i class="bi bi-x-lg"></i></button></header>
+  <div class="chat-mensajes" data-chat-mensajes aria-live="polite">
+    <div class="msg bot"><p>Hola, {{ user.first_name|default:user.username }}. Pregúnteme por un lote, el inventario, sus alertas o cómo registrar algo.</p>
+      <div class="chips"><button type="button" data-sugerencia>¿Qué alertas tengo?</button><button type="button" data-sugerencia>¿Qué hay en el inventario?</button><button type="button" data-sugerencia>¿Cómo registro una cosecha?</button></div></div>
+  </div>
+  <form class="chat-form" data-chat-form>
+    <button type="button" class="chat-icono" data-chat-dictar title="Dictar la pregunta" aria-label="Dictar la pregunta"><i class="bi bi-mic"></i></button>
+    <input name="pregunta" maxlength="500" autocomplete="off" placeholder="Escriba su pregunta…" aria-label="Pregunta" required>
+    <button class="btn btn-primario btn-sm" aria-label="Enviar"><i class="bi bi-send"></i></button>
+  </form>
+</section>
+<div class="voz-estado" data-voz-estado hidden role="status"></div>
+{% endif %}

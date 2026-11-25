@@ -1,0 +1,47 @@
+{% extends "base.html" %}{% load agro %}
+{% block contenido %}
+<section class="portada">
+  {% include "comun/paisaje.html" %}
+  <div class="portada-texto">
+    <div class="fecha">{{ hoy|date:"l j \d\e F \d\e Y"|capfirst }}</div>
+    <h2>{{ saludo }}, {{ request.user.first_name|default:request.user.username }}</h2>
+    <p class="rol"><i class="bi bi-person-badge me-1"></i>{{ rol }}</p>
+    <p>Aquí ve solo la información a su cargo.</p>
+    <div class="acciones">{% if acciones and puede_crear %}<a href="{{ acciones.0.0 }}" class="btn btn-primario btn-sm"><i class="bi {{ acciones.0.2 }} me-1"></i>{{ acciones.0.1 }}</a>{% endif %}
+      {% for g in paneles %}<a href="{{ g.panel }}" class="btn btn-secundario btn-sm"><i class="bi {{ g.icono }} me-1"></i>Panel: {{ g.nombre }}</a>{% endfor %}</div>
+  </div>
+</section>
+<div class="row g-3 mb-3 row-cols-1 row-cols-sm-2 row-cols-xl-4">
+  {% for v, t, i in kpis %}<div class="col"><div class="kpi {% cycle 'verde' 'azul' 'ambar' 'tierra' %}">
+    <div class="cabeza"><span class="icono"><i class="bi {{ i }}"></i></span><span class="etiqueta">{{ t }}</span></div>
+    <div class="valor">{{ v|valor }}</div></div></div>{% endfor %}
+</div>
+<div class="row g-3">
+  <div class="col-lg-8">
+    {% if tabla %}
+    <div class="tarjeta">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-list-task"></i> {{ tabla.0 }}</h2></div>
+      <div class="table-responsive"><table class="table tabla">
+        <thead><tr>{% for h in tabla.1 %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+        <tbody>{% for url, celdas in tabla.2 %}<tr data-href="{{ url }}">{% for c in celdas %}<td>{% if forloop.first %}<strong>{{ c }}</strong>{% else %}{{ c|etiqueta }}{% endif %}</td>{% endfor %}</tr>
+        {% empty %}<tr><td colspan="{{ tabla.1|length }}"><div class="vacio"><i class="bi bi-check2-circle"></i>No hay nada pendiente.</div></td></tr>{% endfor %}</tbody>
+      </table></div>
+    </div>
+    {% endif %}
+  </div>
+  <div class="col-lg-4">
+    <div class="tarjeta mb-3">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-lightning"></i> Tareas frecuentes</h2></div>
+      <div class="d-grid gap-2">{% for url, texto, icono in acciones %}<a href="{{ url }}" class="acceso"><i class="bi {{ icono }}"></i>{{ texto }}</a>{% endfor %}</div>
+      {% if not puede_crear %}<p class="small text-secundario mt-2 mb-0">Su cuenta no tiene permiso para crear registros.</p>{% endif %}
+    </div>
+    <div class="tarjeta">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-clock-history"></i> Mis últimas acciones</h2><a href="{% url 'cuentas:mi_historial' %}" class="small">Ver todo</a></div>
+      <ul class="list-unstyled mb-0 small">
+        {% for a in actividad %}<li class="py-2 border-bottom"><strong>{{ a.get_accion_display }}</strong><br><span class="text-secundario">{{ a.objeto|default:a.detalle|truncatechars:48 }} · {{ a.fecha|timesince }}</span></li>
+        {% empty %}<li class="text-secundario">Aún no registra acciones.</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

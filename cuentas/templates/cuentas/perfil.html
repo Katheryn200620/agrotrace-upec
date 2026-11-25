@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% load agro %}
+{% block contenido %}
+<div class="row g-3">
+  <div class="col-lg-5"><div class="tarjeta">
+    <div class="d-flex align-items-center gap-3 mb-3"><span class="avatar" style="width:52px;height:52px;border-radius:50%;background:var(--verde-suave);display:grid;place-items:center;font-weight:700;color:var(--verde-oscuro)">{{ request.user|iniciales }}</span>
+      <div><h2 class="h5 mb-0">{{ request.user.get_full_name|default:request.user.username }}</h2><span class="text-secundario small">{{ request.user.perfil.rol_legible }}</span></div></div>
+    <dl class="row dato mb-0">
+      <div class="col-6"><dt>Usuario</dt><dd>{{ request.user.username }}</dd></div>
+      <div class="col-6"><dt>Área</dt><dd>{{ area_usuario }}</dd></div>
+      <div class="col-6"><dt>Puede crear</dt><dd>{{ request.user.perfil.puede_crear|valor }}</dd></div>
+      <div class="col-6"><dt>Puede editar</dt><dd>{{ request.user.perfil.puede_editar|valor }}</dd></div>
+      <div class="col-6"><dt>Puede eliminar</dt><dd>{{ request.user.perfil.puede_eliminar|valor }}</dd></div>
+      <div class="col-6"><dt>Correo</dt><dd>{{ request.user.email|valor }}</dd></div>
+    </dl>
+    <p class="small text-secundario mb-0 mt-2"><i class="bi bi-lock"></i> El área y los permisos solo los cambia el administrador general.</p>
+  </div></div>
+  <div class="col-lg-5"><div class="tarjeta"><div class="tarjeta-titulo"><h2><i class="bi bi-key"></i> Cambiar contraseña</h2></div>
+    <form method="post">{% csrf_token %}{% for c in form %}<label class="form-label">{{ c.label }}</label>{{ c }}{% for e in c.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}<div class="mb-2"></div>{% endfor %}
+      <button class="btn btn-primario">Guardar contraseña</button></form></div></div>
+</div>
+{% endblock %}

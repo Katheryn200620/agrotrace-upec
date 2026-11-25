@@ -1,0 +1,31 @@
+{% extends "base.html" %}{% load agro %}
+{% block contenido %}
+<div class="encabezado-area no-imprimir">
+  <div><h2>Etiquetas de trazabilidad</h2><p>Imprima y pegue la etiqueta en el saco, la gaveta o el envase. Al escanear el QR, el cliente ve la procedencia del lote.</p></div>
+  <button class="btn btn-primario btn-sm" onclick="window.print()"><i class="bi bi-printer me-1"></i>Imprimir</button>
+</div>
+<form method="get" class="tarjeta mb-3 no-imprimir">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-8"><label class="form-label">Lotes (deje vacío para todos los que tienen existencias)</label>
+      <select name="lote" multiple class="form-select form-select-sm" size="4">{% for l in todos %}<option value="{{ l.pk }}" {% if l.pk in elegidos %}selected{% endif %}>{{ l.codigo }} · {{ l.producto }}</option>{% endfor %}</select></div>
+    <div class="col-6 col-md-2"><label class="form-label">Copias por lote</label><input type="number" min="1" max="8" name="copias" value="{{ copias }}" class="form-control form-control-sm"></div>
+    <div class="col-6 col-md-2"><button class="btn btn-secundario btn-sm w-100">Actualizar</button></div>
+  </div>
+</form>
+<div class="etiquetas">
+{% for l in lotes %}
+  <div class="etiqueta-qr">
+    <img src="{% url 'lotes:qr' l.pk %}" alt="QR del lote {{ l.codigo }}">
+    <div class="datos">
+      <div class="marca-et"><i class="bi bi-flower3"></i> Planta Hortofrutícola UPEC</div>
+      <strong class="producto-et">{{ l.producto }}</strong>
+      <div>Lote <strong>{{ l.codigo }}</strong> · {{ l.get_categoria_display }}</div>
+      <div>GTIN {{ l.producto.gtin }}</div>
+      <div>Empacado {{ l.fecha_creacion|date:"d/m/Y" }}{% if l.fecha_vencimiento %} · Vence {{ l.fecha_vencimiento|date:"d/m/Y" }}{% endif %}</div>
+      <div>Contenido: {{ l.cantidad_inicial|valor }} {{ l.unidad }}</div>
+      <small>Escanee el código para conocer su origen</small>
+    </div>
+  </div>
+{% empty %}<div class="vacio">No hay lotes para etiquetar.</div>{% endfor %}
+</div>
+{% endblock %}

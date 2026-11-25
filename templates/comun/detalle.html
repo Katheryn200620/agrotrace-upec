@@ -1,0 +1,58 @@
+{% extends "base.html" %}{% load agro %}
+{% block pagina %}{{ titulo_singular }}{% endblock %}
+{% block contenido %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <a href="{% url url_base|add:'_lista' %}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> {{ titulo }}</a>
+    <h2 class="h4 mt-1 mb-1">{{ obj }}</h2>
+    <div class="d-flex gap-2 flex-wrap">
+      {{ obj.get_estado_revision_display|etiqueta }}
+      {% if solo_consulta and not es_admin %}<span class="etq"><i class="bi bi-eye"></i> Solo consulta</span>{% endif %}
+    </div>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    {% block acciones %}{% endblock %}
+    {% if puede_editar %}<a href="{% url url_base|add:'_editar' obj.pk %}" class="btn btn-secundario btn-sm"><i class="bi bi-pencil me-1"></i>Editar</a>{% endif %}
+    {% if puede_eliminar and permite_eliminar %}<a href="{% url url_base|add:'_eliminar' obj.pk %}" class="btn btn-sm btn-secundario text-danger"><i class="bi bi-trash me-1"></i>Eliminar</a>{% endif %}
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-{% block ancho %}5{% endblock %}">
+    <div class="tarjeta mb-3">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-card-text"></i> Datos del registro</h2></div>
+      <dl class="row dato mb-0">
+        {% for etiqueta_, v in campos %}
+          <div class="col-sm-6"><dt>{{ etiqueta_ }}</dt><dd>{{ v|valor }}</dd></div>
+        {% endfor %}
+      </dl>
+    </div>
+    {% if es_admin %}
+    <div class="tarjeta mb-3">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-patch-check"></i> Revisión del administrador</h2>{{ obj.get_estado_revision_display|etiqueta }}</div>
+      {% if obj.revisado_por %}<p class="small text-secundario">Última revisión: {{ obj.revisado_por|valor }}, {{ obj.revisado_en|valor }}{% if obj.nota_revision %} · «{{ obj.nota_revision }}»{% endif %}</p>{% endif %}
+      <form method="post" action="{% url url_base|add:'_revisar' obj.pk %}" class="d-flex gap-2 flex-wrap">{% csrf_token %}
+        <input name="nota" class="form-control form-control-sm" style="flex:1;min-width:160px" placeholder="Nota (opcional)">
+        <button name="estado" value="aprobado" class="btn btn-sm btn-primario">Aprobar</button>
+        <button name="estado" value="observado" class="btn btn-sm btn-secundario">Observar</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+  <div class="col-lg">
+    {% block extra %}
+    {% for titulo_rel, lista_rel in relacionados %}
+      <div class="tarjeta mb-3">
+        <div class="tarjeta-titulo"><h2><i class="bi bi-link-45deg"></i> {{ titulo_rel }}</h2></div>
+        <ul class="list-unstyled mb-0">
+          {% for r in lista_rel %}<li class="py-1 border-bottom"><a href="{{ r.get_absolute_url }}" class="text-decoration-none">{{ r }}</a></li>
+          {% empty %}<li class="text-secundario small">Sin registros relacionados.</li>{% endfor %}
+        </ul>
+      </div>
+    {% empty %}
+      <div class="tarjeta text-secundario small"><i class="bi bi-info-circle me-1"></i>Creado el {{ obj.creado_en|valor }} · Actualizado el {{ obj.actualizado_en|valor }}.</div>
+    {% endfor %}
+    {% endblock %}
+  </div>
+</div>
+{% endblock %}

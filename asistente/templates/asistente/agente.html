@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block pagina %}Agente guiado{% endblock %}
+{% block contenido %}
+<div class="mb-3"><a href="{% url 'asistente:agentes' %}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Agentes guiados</a></div>
+<div class="tarjeta agente" style="max-width: 860px" data-agente>
+  <div class="d-flex gap-3 align-items-start mb-3"><span class="sello-area"><i class="bi {{ agente.icono }}"></i></span>
+    <div><h2 class="h4 mb-1">{{ agente.titulo }}</h2><p class="text-secundario mb-0">{{ agente.descripcion }}</p></div></div>
+  <ol class="pasos-agente" data-pasos>
+    {% for titulo_paso, ayuda_paso, campos in pasos %}<li data-ir="{{ forloop.counter0 }}"><span>{{ forloop.counter }}</span>{{ titulo_paso }}</li>{% endfor %}
+    <li data-ir="{{ pasos|length }}"><span>{{ pasos|length|add:1 }}</span>Revisar y guardar</li>
+  </ol>
+  {% if form.errors %}<div class="alert alert-danger small">Hay datos por corregir. El agente le lleva al paso con el error.</div>{% endif %}
+  <form method="post" enctype="multipart/form-data" novalidate data-form-agente>{% csrf_token %}
+    {% for titulo_paso, ayuda_paso, campos in pasos %}
+    <fieldset class="paso" data-paso="{{ forloop.counter0 }}" {% if not forloop.first %}hidden{% endif %}>
+      <legend>{{ titulo_paso }}</legend>
+      <div class="ayuda mb-3"><i class="bi bi-info-circle me-1"></i>{{ ayuda_paso }}</div>
+      <div class="row g-3">
+      {% for campo in form %}{% if campo.name in campos %}{% include "asistente/_campo.html" %}{% endif %}{% endfor %}
+      {% if forloop.last %}{% for campo in form %}{% if campo.name not in todos_los_campos %}{% include "asistente/_campo.html" %}{% endif %}{% endfor %}{% endif %}
+      </div>
+    </fieldset>
+    {% endfor %}
+    <fieldset class="paso" data-paso="{{ pasos|length }}" hidden>
+      <legend>Revise y guarde</legend>
+      <p class="small text-secundario">Compruebe los datos. Si algo está mal, vuelva al paso correspondiente.</p>
+      <dl class="row dato mb-0" data-resumen></dl>
+    </fieldset>
+    {{ form.non_field_errors }}
+    <div class="d-flex gap-2 mt-4 flex-wrap">
+      <button type="button" class="btn btn-secundario" data-anterior><i class="bi bi-arrow-left me-1"></i>Anterior</button>
+      <button type="button" class="btn btn-primario" data-siguiente>Siguiente <i class="bi bi-arrow-right ms-1"></i></button>
+      <button class="btn btn-primario" data-guardar hidden><i class="bi bi-check-lg me-1"></i>Guardar</button>
+      <a href="{{ volver }}" class="btn btn-secundario ms-auto">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  const raiz = document.querySelector("[data-agente]");
+  const pasos = [...raiz.querySelectorAll(".paso")], marcas = [...raiz.querySelectorAll("[data-pasos] li")];
+  const ant = raiz.querySelector("[data-anterior]"), sig = raiz.querySelector("[data-siguiente]"), guardar = raiz.querySelector("[data-guardar]");
+  let actual = 0;
+  const conError = pasos.findIndex(p => p.querySelector(".invalid-feedback"));
+  function mostrar(i) {
+    actual = i;
+    pasos.forEach((p, j) => p.hidden = j !== i);
+    marcas.forEach((m, j) => { m.classList.toggle("activo", j === i); m.classList.toggle("hecho", j < i); });
+    ant.disabled = i === 0; sig.hidden = i === pasos.length - 1; guardar.hidden = i !== pasos.length - 1;
+    if (i === pasos.length - 1) resumen();
+    const primero = pasos[i].querySelector("input:not([type=hidden]), select, textarea"); if (primero) primero.focus();
+  }
+  function valido(i) {
+    let ok = true;
+    pasos[i].querySelectorAll("[required]").forEach(c => {
+      const vacio = c.multiple ? !c.selectedOptions.length : !String(c.value).trim();
+      c.classList.toggle("is-invalid", vacio); if (vacio) ok = false;
+    });
+    if (!ok) pasos[i].querySelector(".is-invalid").focus();
+    return ok;
+  }
+  function resumen() {
+    const dl = raiz.querySelector("[data-resumen]"); dl.innerHTML = "";
+    pasos.slice(0, -1).forEach(p => p.querySelectorAll("input:not([type=hidden]), select, textarea").forEach(c => {
+      const et = raiz.querySelector(`label[for="${c.id}"]`); if (!et) return;
+      let v = c.type === "checkbox" ? (c.checked ? "Sí" : "No") : (c.tagName === "SELECT" ? [...c.selectedOptions].map(o => o.text).join(", ") : c.value);
+      if (!v || v.startsWith("—")) v = "–";
+      const div = document.createElement("div"); div.className = "col-sm-6";
+      const dt = document.createElement("dt"); dt.textContent = et.textContent.replace("*", "");
+      const dd = document.createElement("dd"); dd.textContent = v; div.append(dt, dd); dl.appendChild(div);
+    }));
+  }
+  sig.addEventListener("click", () => { if (valido(actual)) mostrar(actual + 1); });
+  ant.addEventListener("click", () => mostrar(Math.max(0, actual - 1)));
+  marcas.forEach((m, j) => m.addEventListener("click", () => { if (j <= actual || valido(actual)) mostrar(j); }));
+  mostrar(conError >= 0 ? conError : 0);
+})();
+</script>
+{% endblock %}

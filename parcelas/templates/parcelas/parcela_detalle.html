@@ -1,0 +1,19 @@
+{% extends "comun/detalle.html" %}{% load agro %}
+{% block acciones %}{% if puede_editar %}<a href="{% url 'parcelas:labor_crear' %}?parcela={{ obj.pk }}" class="btn btn-primario btn-sm"><i class="bi bi-tools me-1"></i>Registrar labor</a>{% endif %}{% endblock %}
+{% block extra %}
+<div class="row g-3 mb-3">
+  <div class="col-sm-4"><div class="kpi"><div class="icono"><i class="bi bi-bounding-box"></i></div><div class="valor">{{ obj.superficie|valor }}</div><div class="etiqueta">{{ obj.get_unidad_superficie_display }}</div></div></div>
+  <div class="col-sm-4"><div class="kpi"><div class="icono"><i class="bi bi-basket"></i></div><div class="valor">{{ cosechas|length }}</div><div class="etiqueta">Cosechas registradas</div></div></div>
+  <div class="col-sm-4"><div class="kpi {% if pct_rechazo >= 10 %}alerta{% endif %}"><div class="icono"><i class="bi bi-x-octagon"></i></div><div class="valor">{% if pct_rechazo is not None %}{{ pct_rechazo }} %{% else %}–{% endif %}</div><div class="etiqueta">Rechazo en planta</div></div></div>
+</div>
+{% if obj.latitud %}<div class="tarjeta mb-3 d-flex justify-content-between align-items-center"><span><i class="bi bi-geo-alt text-success me-1"></i>{{ obj.latitud }}, {{ obj.longitud }}{% if obj.altitud_msnm %} · {{ obj.altitud_msnm }} m s. n. m.{% endif %}</span>
+  <a class="btn btn-sm btn-secundario" target="_blank" href="https://www.openstreetmap.org/?mlat={{ obj.latitud|stringformat:'s' }}&mlon={{ obj.longitud|stringformat:'s' }}#map=17/{{ obj.latitud|stringformat:'s' }}/{{ obj.longitud|stringformat:'s' }}">Ver en el mapa</a></div>{% endif %}
+<div class="tarjeta mb-3"><div class="tarjeta-titulo"><h2><i class="bi bi-tools"></i> Labores</h2></div>
+  <table class="table tabla"><thead><tr><th>Fecha</th><th>Labor</th><th>Insumo</th><th>Dosis</th></tr></thead><tbody>
+  {% for l in labores %}<tr data-href="{{ l.get_absolute_url }}"><td>{{ l.fecha|valor }}</td><td>{{ l.get_tipo_display }}</td><td>{{ l.insumo|valor }}</td><td>{{ l.dosis|valor }}</td></tr>
+  {% empty %}<tr><td colspan="4" class="text-secundario small">Sin labores.</td></tr>{% endfor %}</tbody></table></div>
+<div class="tarjeta"><div class="tarjeta-titulo"><h2><i class="bi bi-basket"></i> Cosechas</h2></div>
+  <table class="table tabla"><thead><tr><th>Cosecha</th><th>Fecha</th><th>Cantidad</th><th>Número de lote</th></tr></thead><tbody>
+  {% for c in cosechas %}<tr data-href="{{ c.get_absolute_url }}"><td>{{ c.codigo }}</td><td>{{ c.fecha|valor }}</td><td>{{ c.cantidad|valor }} {{ c.unidad }}</td><td>{% for l in c.lotes.all %}<span class="etq etq-verde me-1">{{ l.codigo }}</span>{% empty %}<span class="text-secundario small">Aún sin lote</span>{% endfor %}</td></tr>
+  {% empty %}<tr><td colspan="4" class="text-secundario small">Sin cosechas.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

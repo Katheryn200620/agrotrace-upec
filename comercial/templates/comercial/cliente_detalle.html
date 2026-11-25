@@ -1,0 +1,16 @@
+{% extends "comun/detalle.html" %}{% load agro %}
+{% block acciones %}{% if puede_crear %}<a href="{% url 'comercial:venta_crear' %}?cliente={{ obj.pk }}" class="btn btn-primario btn-sm"><i class="bi bi-cart-plus me-1"></i>Registrar venta</a>{% endif %}{% endblock %}
+{% block extra %}
+<div class="tarjeta mb-3">
+  <div class="tarjeta-titulo"><h2><i class="bi bi-receipt"></i> Ventas del cliente</h2><span class="small text-secundario">{{ ventas|length }} recientes</span></div>
+  <div class="table-responsive"><table class="table tabla">
+    <thead><tr><th>Venta</th><th>Fecha</th><th>Lote</th><th>Cantidad</th><th>Total</th><th>Estado</th></tr></thead>
+    <tbody>{% for v in ventas %}<tr data-href="{{ v.get_absolute_url }}"><td>{{ v.codigo }}</td><td>{{ v.fecha|valor }}</td><td>{{ v.lote.codigo }}</td>
+      <td>{{ v.cantidad|valor }} {{ v.unidad }}</td><td>$ {{ v.total|valor }}</td><td>{{ v.get_estado_display|etiqueta }}</td></tr>
+    {% empty %}<tr><td colspan="6"><div class="vacio"><i class="bi bi-receipt"></i>Este cliente todavía no tiene ventas.</div></td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+<div class="tarjeta"><div class="tarjeta-titulo"><h2><i class="bi bi-box-seam"></i> Lotes entregados a este cliente</h2></div>
+  {% for c in lotes_entregados %}<span class="etq etq-verde me-1">{{ c }}</span>{% empty %}<span class="small text-secundario">Ningún lote despachado todavía.</span>{% endfor %}
+  <p class="small text-secundario mt-2 mb-0">Si un lote se retira del mercado, esta lista indica a qué clientes avisar.</p></div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block contenido %}
+<header class="encabezado-area"><div class="d-flex gap-3"><span class="sello-area"><i class="bi bi-signpost-2"></i></span>
+  <div><div class="area-etq">Área 1 · Panel general</div><h2>Agentes guiados</h2>
+  <p>Le llevan paso a paso, con instrucciones y validación en cada paso. Usan los mismos formularios y reglas que el resto del sistema.</p></div></div></header>
+<div class="row g-3 row-cols-1 row-cols-md-2 row-cols-xl-3">
+  {% for clave, titulo, desc, icono, permitido in agentes %}
+  <div class="col"><div class="tarjeta h-100 agente-tarjeta{% if not permitido %} bloqueado{% endif %}">
+    <span class="sello-area chico"><i class="bi {{ icono }}"></i></span>
+    <h3>{{ titulo }}</h3><p class="small text-secundario">{{ desc }}</p>
+    {% if permitido %}<a href="{% url 'asistente:agente_'|add:clave %}" class="btn btn-primario btn-sm">Empezar</a>
+    {% else %}<span class="small text-secundario"><i class="bi bi-lock me-1"></i>Lo realiza otra área</span>{% endif %}
+  </div></div>
+  {% endfor %}
+  <div class="col"><div class="tarjeta h-100 agente-tarjeta">
+    <span class="sello-area chico"><i class="bi bi-qr-code-scan"></i></span>
+    <h3>Consultar la trazabilidad</h3><p class="small text-secundario">Escriba o escanee el código de un lote y vea su procedencia completa.</p>
+    <a href="{% url 'asistente:agente_trazabilidad' %}" class="btn btn-primario btn-sm">Empezar</a></div></div>
+</div>
+{% endblock %}

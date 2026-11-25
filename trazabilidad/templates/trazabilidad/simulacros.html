@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% load agro %}
+{% block contenido %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <p class="text-secundario mb-0">Experimento E1: tiempo y completitud del rastreo parcela → cliente, práctica actual frente al aplicativo.</p>
+  {% if puede %}<div class="d-flex gap-2">
+    <a href="{% url 'trazabilidad:simulacro_registrar' %}" class="btn btn-secundario btn-sm"><i class="bi bi-pencil me-1"></i>Registrar práctica actual</a>
+    {% if not activo %}<form method="post" action="{% url 'trazabilidad:simulacro_iniciar' %}">{% csrf_token %}<button class="btn btn-primario btn-sm"><i class="bi bi-play-fill me-1"></i>Iniciar con el aplicativo</button></form>{% endif %}
+  </div>{% endif %}
+</div>
+<div class="row g-3 mb-3">
+  {% for r in resumen %}<div class="col-md-6"><div class="kpi"><div class="icono"><i class="bi bi-stopwatch"></i></div><div class="valor">{{ r.minutos|valor }} min</div>
+    <div class="etiqueta">{{ r.metodo }} · {{ r.n }} simulacro(s) · {{ r.completitud }} % de eventos completos</div></div></div>
+  {% empty %}<div class="col-12"><div class="ayuda"><strong>Cómo se hace:</strong> 1) Pida al personal que, sin el aplicativo, identifique la parcela de origen y los destinos de un lote; cronometre y regístrelo como «práctica actual». 2) Pulse «Iniciar con el aplicativo»: el sistema elige un lote al azar y mide el tiempo hasta que pulse «Terminar simulacro». Repita al menos cinco veces con cada método.</div></div>{% endfor %}
+</div>
+<div class="tabla-contenedor"><table class="table tabla"><thead><tr><th>Fecha</th><th>Lote</th><th>Método</th><th>Minutos</th><th>Eventos completos</th><th>Responsable</th></tr></thead>
+<tbody>{% for s in simulacros %}<tr><td>{{ s.fecha|valor }}</td><td><a href="{{ s.lote.get_absolute_url }}">{{ s.lote.codigo }}</a></td><td>{{ s.get_metodo_display }}</td><td>{{ s.minutos|valor }}</td><td>{{ s.completitud_pct }} %</td><td>{{ s.responsable|valor }}</td></tr>
+{% empty %}<tr><td colspan="6"><div class="vacio"><i class="bi bi-stopwatch"></i>Todavía no hay simulacros.</div></td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

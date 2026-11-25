@@ -1,0 +1,40 @@
+{% extends "comun/detalle.html" %}{% load agro %}
+{% block acciones %}
+{% if obj.tipo_destino == 'cedi' %}<a href="{% url 'trazabilidad:contrato_despacho' obj.pk %}" target="_blank" class="btn btn-secundario btn-sm"><i class="bi bi-braces me-1"></i>Contrato CEDI</a>{% endif %}
+{% endblock %}
+{% block extra %}
+<div class="tarjeta mb-3">
+  <div class="tarjeta-titulo"><h2><i class="bi bi-truck"></i> {{ obj.codigo }}</h2>{{ obj.get_estado_display|etiqueta }}</div>
+  <dl class="row dato mb-0">
+    <div class="col-sm-6"><dt>Lote</dt><dd><a href="{{ obj.lote.get_absolute_url }}">{{ obj.lote.codigo }}</a> · {{ obj.lote.producto.nombre }}</dd></div>
+    <div class="col-sm-6"><dt>Cantidad</dt><dd>{{ obj.cantidad|valor }} {{ obj.lote.unidad }}</dd></div>
+    <div class="col-sm-6"><dt>Transportista</dt><dd>{{ obj.transportista|valor }}</dd></div>
+    <div class="col-sm-6"><dt>Vehículo</dt><dd>{{ obj.vehiculo|valor }}</dd></div>
+    <div class="col-sm-6"><dt>Origen</dt><dd>{{ obj.origen }}</dd></div>
+    <div class="col-sm-6"><dt>Destino</dt><dd>{{ obj.destino }} ({{ obj.get_tipo_destino_display|lower }})</dd></div>
+    <div class="col-sm-6"><dt>Salida</dt><dd>{{ obj.salida|valor }}</dd></div>
+    <div class="col-sm-6"><dt>Recepción en destino</dt><dd>{{ obj.llegada|valor }}</dd></div>
+    <div class="col-sm-6"><dt>¿A tiempo?</dt><dd>{{ obj.entregado_a_tiempo|valor }}</dd></div>
+    <div class="col-sm-6"><dt>Km recorridos</dt><dd>{{ obj.km_recorridos|valor }}</dd></div>
+  </dl>
+</div>
+{% if puede_editar %}
+<div class="tarjeta mb-3">
+  <div class="tarjeta-titulo"><h2><i class="bi bi-arrow-repeat"></i> Actualizar el transporte</h2></div>
+  {% if obj.estado == 'programado' %}
+    <div class="d-flex gap-2 flex-wrap">
+      <form method="post" action="{% url 'transporte:despacho_salir' obj.pk %}">{% csrf_token %}<button class="btn btn-primario btn-sm"><i class="bi bi-signpost-split me-1"></i>Registrar salida</button></form>
+      <form method="post" action="{% url 'transporte:despacho_cancelar' obj.pk %}" class="d-flex gap-2" data-confirmar="¿Cancelar el despacho? La cantidad volverá al lote.">{% csrf_token %}
+        <input name="motivo" class="form-control form-control-sm" placeholder="Motivo de cancelación" required><button class="btn btn-sm btn-secundario text-danger">Cancelar</button></form>
+    </div>
+  {% elif obj.estado == 'transito' %}
+    <form method="post" action="{% url 'transporte:despacho_entregar' obj.pk %}" class="row g-2">{% csrf_token %}
+      {% for c in form_entrega %}<div class="col-md-4"><label class="form-label">{{ c.label }}</label>{{ c }}</div>{% endfor %}
+      <div class="col-12"><button class="btn btn-primario btn-sm"><i class="bi bi-check2-circle me-1"></i>Registrar entrega</button></div></form>
+  {% else %}<p class="text-secundario small mb-0">El despacho está {{ obj.get_estado_display|lower }}; no tiene acciones pendientes.</p>{% endif %}
+</div>
+{% endif %}
+<div class="tarjeta"><div class="tarjeta-titulo"><h2><i class="bi bi-clock-history"></i> Eventos de transporte del lote</h2></div>
+  <ul class="tiempo">{% for e in eventos %}<li><span class="punto"><i class="bi {{ e.tipo|icono_evento }}"></i></span><div class="titulo-ev">{{ e.get_tipo_display }}</div><div class="small">{{ e.descripcion }}</div><div class="meta">{{ e.fecha_hora|valor }}</div></li>
+  {% empty %}<li class="text-secundario small">Sin eventos.</li>{% endfor %}</ul></div>
+{% endblock %}

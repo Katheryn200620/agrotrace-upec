@@ -1,0 +1,35 @@
+{% extends "base.html" %}{% load agro %}
+{% block contenido %}
+<div class="mb-3"><a href="{% url 'trazabilidad:evento_lista' %}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Historial</a></div>
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="tarjeta">
+      <div class="tarjeta-titulo"><h2><i class="bi {{ ev.tipo|icono_evento }}"></i> {{ ev.get_tipo_display }} #{{ ev.pk }}</h2>{% if ev.corregido %}<span class="etq etq-ambar">Corregido</span>{% endif %}</div>
+      <dl class="row dato mb-0">
+        <div class="col-sm-6"><dt>Fecha y hora</dt><dd>{{ ev.fecha_hora|valor }}</dd></div>
+        <div class="col-sm-6"><dt>Lugar</dt><dd>{{ ev.lugar }}</dd></div>
+        <div class="col-12"><dt>Qué ocurrió</dt><dd>{{ ev.descripcion }}</dd></div>
+        <div class="col-sm-6"><dt>Lote</dt><dd>{% if ev.lote %}<a href="{{ ev.lote.get_absolute_url }}">{{ ev.lote.codigo }}</a>{% else %}–{% endif %}</dd></div>
+        <div class="col-sm-6"><dt>Cosecha</dt><dd>{{ ev.cosecha.codigo|default:"–" }}</dd></div>
+        <div class="col-sm-6"><dt>Cantidad</dt><dd>{{ ev.cantidad|valor }} {{ ev.unidad }}</dd></div>
+        <div class="col-sm-6"><dt>Responsable</dt><dd>{{ ev.responsable|valor }} · {{ ev.area_responsable }}</dd></div>
+        <div class="col-sm-6"><dt>Paso de negocio (CBV)</dt><dd><code>{{ ev.biz_step }}</code> · {{ ev.tipo_epcis }}</dd></div>
+        <div class="col-sm-6"><dt>Origen del registro</dt><dd>{{ ev.get_origen_display }} · {{ ev.creado_en|valor }}</dd></div>
+        {% if ev.corrige %}<div class="col-12"><dt>Corrige al evento</dt><dd><a href="{{ ev.corrige.get_absolute_url }}">#{{ ev.corrige_id }} · {{ ev.corrige.descripcion }}</a></dd></div>{% endif %}
+        <div class="col-12"><dt>Observaciones</dt><dd>{{ ev.observaciones|valor }}</dd></div>
+      </dl>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    {% if correcciones %}<div class="tarjeta mb-3"><div class="tarjeta-titulo"><h2><i class="bi bi-pencil-square"></i> Correcciones</h2></div>
+      {% for c in correcciones %}<p class="small mb-2"><a href="{{ c.get_absolute_url }}">#{{ c.pk }}</a> · {{ c.descripcion }}<br><span class="text-secundario">{{ c.responsable|valor }}, {{ c.fecha_hora|valor }} · {{ c.observaciones }}</span></p>{% endfor %}</div>{% endif %}
+    {% if puede_corregir %}
+    <div class="tarjeta"><div class="tarjeta-titulo"><h2><i class="bi bi-pencil-square"></i> Registrar una corrección</h2></div>
+      <p class="small text-secundario">El evento original no se modifica: la corrección queda como un evento nuevo enlazado a este.</p>
+      <form method="post" action="{% url 'trazabilidad:evento_corregir' ev.pk %}">{% csrf_token %}
+        {% for c in form %}<label class="form-label obligatorio">{{ c.label }}</label>{{ c }}<div class="form-text mb-2">{{ c.help_text }}</div>{% endfor %}
+        <button class="btn btn-primario btn-sm">Registrar corrección</button></form></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% load agro %}
+{% block contenido %}
+<div class="encabezado-area">
+  <div><h2>Entradas y salidas</h2><p>Control de movimientos por lote: ingresos desde cosecha o transformación, salidas por despacho o transformación y devoluciones.</p></div>
+  <a href="?{{ params }}&exportar=csv" class="btn btn-secundario btn-sm"><i class="bi bi-download me-1"></i>Exportar CSV</a>
+</div>
+<form method="get" class="tarjeta mb-3 row g-2 mx-0">
+  <div class="col-6 col-md-3"><label class="form-label">Lote</label><input name="lote" value="{{ f.lote }}" class="form-control form-control-sm" placeholder="Código"></div>
+  <div class="col-6 col-md-3"><label class="form-label">Tipo</label><select name="tipo" class="form-select form-select-sm"><option value="">Todos</option><option value="entrada" {% if f.tipo == 'entrada' %}selected{% endif %}>Entradas</option><option value="salida" {% if f.tipo == 'salida' %}selected{% endif %}>Salidas</option></select></div>
+  <div class="col-6 col-md-2"><label class="form-label">Desde</label><input type="date" name="desde" value="{{ f.desde }}" class="form-control form-control-sm"></div>
+  <div class="col-6 col-md-2"><label class="form-label">Hasta</label><input type="date" name="hasta" value="{{ f.hasta }}" class="form-control form-control-sm"></div>
+  <div class="col-md-2 d-flex align-items-end gap-1"><button class="btn btn-primario btn-sm">Filtrar</button><a href="?" class="btn btn-secundario btn-sm">Limpiar</a></div>
+</form>
+<div class="tabla-contenedor"><div class="table-responsive"><table class="table tabla"><thead><tr><th>Fecha</th><th>Lote</th><th>Producto</th><th>Movimiento</th><th>Motivo</th><th class="text-end">Cantidad</th><th>Documento</th></tr></thead><tbody>
+{% for x in pagina %}<tr><td>{{ x.fecha|valor }}</td><td><a href="{{ x.lote.get_absolute_url }}">{{ x.lote.codigo }}</a></td><td>{{ x.lote.producto.nombre }}</td>
+  <td>{% if x.tipo == 'entrada' %}<span class="etq etq-verde">Entrada</span>{% else %}<span class="etq etq-azul">Salida</span>{% endif %}</td><td>{{ x.motivo }}</td>
+  <td class="text-end">{% if x.tipo == 'salida' %}−{% else %}+{% endif %}{{ x.cantidad|valor }} {{ x.unidad }}</td><td><a href="{{ x.url }}">{{ x.doc }}</a></td></tr>
+{% empty %}<tr><td colspan="7"><div class="vacio"><i class="bi bi-arrow-left-right"></i>No hay movimientos con esos filtros.</div></td></tr>{% endfor %}</tbody></table></div></div>
+<div class="d-flex justify-content-between align-items-center mt-2 small text-secundario"><span>{{ total }} movimiento{{ total|pluralize }}</span>
+{% if pagina.has_other_pages %}<nav><ul class="pagination pagination-sm mb-0">{% if pagina.has_previous %}<li class="page-item"><a class="page-link" href="?{{ params }}&page={{ pagina.previous_page_number }}">Anterior</a></li>{% endif %}<li class="page-item active"><span class="page-link">{{ pagina.number }} / {{ pagina.paginator.num_pages }}</span></li>{% if pagina.has_next %}<li class="page-item"><a class="page-link" href="?{{ params }}&page={{ pagina.next_page_number }}">Siguiente</a></li>{% endif %}</ul></nav>{% endif %}</div>
+{% endblock %}

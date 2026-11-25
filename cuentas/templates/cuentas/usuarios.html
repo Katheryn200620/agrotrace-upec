@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% load agro %}
+{% block contenido %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <form method="get" class="d-flex gap-2"><input name="q" value="{{ q }}" class="form-control form-control-sm" placeholder="Buscar usuario"><button class="btn btn-sm btn-secundario">Buscar</button></form>
+  <a href="{% url 'cuentas:usuario_crear' %}" class="btn btn-primario btn-sm"><i class="bi bi-person-plus me-1"></i>Nueva cuenta</a>
+</div>
+<div class="row g-3">
+  <div class="col-xl-8"><div class="tabla-contenedor"><div class="table-responsive"><table class="table tabla">
+    <thead><tr><th>Usuario</th><th>Nombre</th><th>Rol y área</th><th>Permisos</th><th>Estado</th><th class="text-end">Acciones</th></tr></thead>
+    <tbody>{% for u in usuarios %}
+      <tr><td><strong>{{ u.username }}</strong></td><td>{{ u.get_full_name|valor }}</td><td class="small">{{ u.perfil.rol_legible }}</td>
+        <td class="small">{% if u.perfil.es_admin_general or u.is_superuser %}Todos{% else %}{% if u.perfil.puede_crear %}crear {% endif %}{% if u.perfil.puede_editar %}· editar {% endif %}{% if u.perfil.puede_eliminar %}· eliminar{% endif %}{% endif %}</td>
+        <td>{% if u.is_active %}<span class="etq etq-verde">Activa</span>{% else %}<span class="etq etq-rojo">Desactivada</span>{% endif %}</td>
+        <td class="text-end text-nowrap"><a href="{% url 'cuentas:usuario_editar' u.pk %}" class="btn btn-sm btn-secundario">Editar</a>
+          {% if u != request.user %}<form method="post" action="{% url 'cuentas:usuario_activar' u.pk %}" class="d-inline" data-confirmar="¿{% if u.is_active %}Desactivar{% else %}Activar{% endif %} la cuenta {{ u.username }}?">{% csrf_token %}
+            <button class="btn btn-sm btn-secundario">{% if u.is_active %}Desactivar{% else %}Activar{% endif %}</button></form>{% endif %}</td></tr>
+    {% endfor %}</tbody></table></div></div>
+    <p class="small text-secundario mt-2"><i class="bi bi-info-circle"></i> Las cuentas no se eliminan: al desactivarlas se conserva su historial.</p></div>
+  <div class="col-xl-4"><div class="tarjeta"><div class="tarjeta-titulo"><h2><i class="bi bi-diagram-2"></i> Áreas de trabajo</h2></div>
+    <p class="small text-secundario">Habilite solo los perfiles que necesita. Un área deshabilitada bloquea el acceso de sus operadores.</p>
+    {% for a in areas %}<div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+      <span>{{ a.nombre }} <span class="small text-secundario">· {{ a.operadores.count }} operador(es)</span></span>
+      <form method="post" action="{% url 'cuentas:area_activar' a.pk %}">{% csrf_token %}<button class="btn btn-sm {% if a.activa %}btn-secundario{% else %}btn-primario{% endif %}">{% if a.activa %}Deshabilitar{% else %}Habilitar{% endif %}</button></form></div>{% endfor %}
+  </div></div>
+</div>
+{% endblock %}

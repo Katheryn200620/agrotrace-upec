@@ -1,0 +1,138 @@
+{% extends "base.html" %}{% load agro %}
+{% block pagina %}Ficha digital del lote{% endblock %}
+{% block contenido %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <a href="{% url 'lotes:lote_lista' %}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Lotes</a>
+    <h2 class="h4 mt-1 mb-1">Lote {{ obj.codigo }} <span class="fw-normal text-secundario">· {{ obj.producto }}</span></h2>
+    <div class="d-flex gap-2 flex-wrap">{{ obj.get_estado_display|etiqueta }} {{ obj.get_categoria_display|etiqueta }} {{ obj.get_estado_revision_display|etiqueta }}
+      {% if solo_consulta and not es_admin %}<span class="etq"><i class="bi bi-eye"></i> Solo consulta</span>{% endif %}
+      {% if obj.por_vencer and obj.estado != 'retirado' %}<span class="etq etq-ambar"><i class="bi bi-alarm"></i> Por vencer</span>{% endif %}</div>
+  </div>
+  <div class="d-flex gap-2 flex-wrap no-imprimir">
+    <a href="{% url 'trazabilidad:lote_epcis' obj.pk %}" class="btn btn-secundario btn-sm" target="_blank"><i class="bi bi-braces me-1"></i>EPCIS</a>
+    <button onclick="window.print()" class="btn btn-secundario btn-sm"><i class="bi bi-printer me-1"></i>Imprimir ficha</button>
+    {% if puede_editar %}<a href="{% url 'lotes:lote_editar' obj.pk %}" class="btn btn-secundario btn-sm"><i class="bi bi-pencil me-1"></i>Editar</a>{% endif %}
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-xl-4">
+    <div class="tarjeta mb-3 text-center">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-qr-code"></i> QR GS1 Digital Link</h2><span class="small text-secundario">{{ escaneos }} escaneos</span></div>
+      <div class="qr"><img src="{% url 'lotes:qr' obj.pk %}" alt="Código QR del lote {{ obj.codigo }}" width="190" height="190"></div>
+      <p class="small text-break mt-2 mb-2"><code>{{ obj.link_gs1 }}</code></p>
+      <div class="d-flex gap-2 justify-content-center no-imprimir">
+        <a href="{% url 'lotes:qr' obj.pk %}?descargar=1" class="btn btn-sm btn-secundario"><i class="bi bi-download me-1"></i>Descargar QR</a>
+        <a href="{% url 'procedencia_gs1' obj.producto.gtin obj.codigo %}" target="_blank" class="btn btn-sm btn-secundario"><i class="bi bi-box-arrow-up-right me-1"></i>Ficha pública</a>
+      </div>
+      {% if not obj.publicado %}<p class="small text-danger mt-2 mb-0">La ficha pública está desactivada.</p>{% endif %}
+    </div>
+    <div class="tarjeta mb-3">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-card-text"></i> Datos del lote</h2></div>
+      <dl class="row dato mb-0">
+        <div class="col-6"><dt>Cantidad inicial</dt><dd>{{ obj.cantidad_inicial|valor }} {{ obj.unidad }}</dd></div>
+        <div class="col-6"><dt>Disponible</dt><dd>{{ obj.cantidad_disponible|valor }} {{ obj.unidad }}</dd></div>
+        <div class="col-6"><dt>Creación</dt><dd>{{ obj.fecha_creacion|valor }}</dd></div>
+        <div class="col-6"><dt>Vencimiento</dt><dd>{{ obj.fecha_vencimiento|valor }}</dd></div>
+        <div class="col-6"><dt>GTIN</dt><dd>{{ obj.producto.gtin }}</dd></div>
+        <div class="col-6"><dt>Ubicación</dt><dd>{{ obj.ubicacion }}</dd></div>
+        <div class="col-12"><dt>Proceso aplicado</dt><dd>{{ obj.proceso|valor }}</dd></div>
+        <div class="col-12"><dt>Responsable</dt><dd>{{ obj.responsable|valor }}</dd></div>
+      </dl>
+    </div>
+    <div class="tarjeta mb-3">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-list-check"></i> Completitud de eventos</h2><strong>{{ obj.completitud }} %</strong></div>
+      <div class="progreso mb-3 {% if obj.completitud < 100 %}ambar{% endif %}"><span style="width:{{ obj.completitud }}%"></span></div>
+      <ul class="list-unstyled small mb-0">{% for c, n, ok in control %}<li class="py-1">{% if ok %}<i class="bi bi-check-circle-fill text-success me-1"></i>{% else %}<i class="bi bi-circle text-secundario me-1"></i>{% endif %}{{ n }}</li>{% endfor %}</ul>
+    </div>
+  </div>
+
+  <div class="col-xl-8">
+    <div class="tarjeta mb-3">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-geo"></i> Procedencia</h2></div>
+      <div class="row g-3">
+        <div class="col-md-6"><dt class="small text-secundario text-uppercase">Productores</dt>
+          {% for p in obj.productores %}<div><a href="{{ p.get_absolute_url }}">{{ p.nombre }}</a> <span class="small text-secundario">· {{ p.ubicacion }}</span></div>{% empty %}<div class="text-secundario">–</div>{% endfor %}</div>
+        <div class="col-md-6"><dt class="small text-secundario text-uppercase">Parcelas de origen</dt>
+          {% for p in parcelas %}<div><a href="{{ p.get_absolute_url }}">{{ p.codigo }} · {{ p.nombre }}</a> <span class="small text-secundario">GLN {{ p.gln }}</span></div>{% empty %}<div class="text-secundario">–</div>{% endfor %}</div>
+        <div class="col-12"><dt class="small text-secundario text-uppercase">Cosechas</dt>
+          <div class="d-flex flex-wrap gap-2">{% for c in cosechas %}<a href="{{ c.get_absolute_url }}" class="etq etq-verde text-decoration-none">{{ c.codigo }} · {{ c.fecha|valor }}</a>{% empty %}<span class="text-secundario">–</span>{% endfor %}</div></div>
+        {% if origenes %}<div class="col-12"><dt class="small text-secundario text-uppercase">Proviene de</dt>
+          {% for r in origenes %}<div class="small"><span class="etq etq-azul">{{ r.get_tipo_display }}</span> <a href="{{ r.origen.get_absolute_url }}">{{ r.origen.codigo }}</a> · {{ r.cantidad|valor }} {{ r.origen.unidad }} · {{ r.fecha|valor }}</div>{% endfor %}</div>{% endif %}
+        {% if derivados %}<div class="col-12"><dt class="small text-secundario text-uppercase">Lotes derivados</dt>
+          {% for r in derivados %}<div class="small"><span class="etq etq-azul">{{ r.get_tipo_display }}</span> <a href="{{ r.resultado.get_absolute_url }}">{{ r.resultado.codigo }}</a> · {{ r.cantidad|valor }} {{ obj.unidad }}</div>{% endfor %}</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="tarjeta mb-3">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-clock-history"></i> Historial de trazabilidad</h2>
+        {% if 'trazabilidad' in area_usuario|lower or es_admin %}<a href="{% url 'trazabilidad:evento_crear' %}?lote={{ obj.pk }}" class="btn btn-sm btn-secundario no-imprimir"><i class="bi bi-plus-lg"></i> Evento</a>{% endif %}</div>
+      <ul class="tiempo">
+        {% for e in eventos %}
+          <li class="{% if e.disposicion == 'non_conformant' %}rechazo{% endif %} {{ e.tipo }} {% if e.corregido %}anulado{% endif %}">
+            <span class="punto"><i class="bi {{ e.tipo|icono_evento }}"></i></span>
+            <div class="cuerpo">
+              <div class="d-flex justify-content-between flex-wrap gap-1"><span class="titulo-ev">{{ e.get_tipo_display }}</span><span class="meta">{{ e.fecha_hora|valor }}</span></div>
+              <div class="small">{{ e.descripcion }}</div>
+              <div class="meta"><i class="bi bi-geo-alt"></i> {{ e.lugar }} · <i class="bi bi-person"></i> {{ e.responsable|valor }} ({{ e.area_responsable }}){% if e.corrige %} · corrige el evento <a href="{{ e.corrige.get_absolute_url }}">#{{ e.corrige_id }}</a>{% endif %}{% if e.observaciones %} · {{ e.observaciones }}{% endif %}</div>
+            </div>
+          </li>
+        {% empty %}<li class="text-secundario">Sin eventos.</li>{% endfor %}
+      </ul>
+    </div>
+
+    <div class="tarjeta mb-3">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-truck"></i> Movimientos y destinos</h2></div>
+      <div class="table-responsive"><table class="table tabla">
+        <thead><tr><th>Despacho</th><th>Salida</th><th>Destino</th><th>Cantidad</th><th>Estado</th></tr></thead>
+        <tbody>{% for d in despachos %}<tr data-href="{{ d.get_absolute_url }}"><td><strong>{{ d.codigo }}</strong></td><td>{{ d.salida|valor }}</td><td>{{ d.destino }}</td><td>{{ d.cantidad|valor }} {{ obj.unidad }}</td><td>{{ d.get_estado_display|etiqueta }}</td></tr>
+        {% empty %}<tr><td colspan="5"><div class="vacio py-3">Todavía no hay despachos.</div></td></tr>{% endfor %}</tbody>
+      </table></div>
+    </div>
+
+    {% if puede_operar or puede_retirar or es_admin %}
+    <div class="tarjeta no-imprimir">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-tools"></i> Operaciones del lote</h2><span class="small text-secundario">Cada operación conserva la procedencia</span></div>
+      <div class="accordion" id="ops">
+        {% if puede_operar %}
+        <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#op1" type="button"><i class="bi bi-scissors me-2"></i>Dividir el lote</button></h3>
+          <div id="op1" class="accordion-collapse collapse" data-bs-parent="#ops"><div class="accordion-body">
+            <form method="post" action="{% url 'lotes:dividir' obj.pk %}" class="row g-2">{% csrf_token %}
+              <div class="col-md-4"><label class="form-label">{{ form_dividir.cantidad.label }}</label>{{ form_dividir.cantidad }}</div>
+              <div class="col-md-4"><label class="form-label">{{ form_dividir.ubicacion.label }}</label>{{ form_dividir.ubicacion }}</div>
+              <div class="col-md-4"><label class="form-label">Observaciones</label>{{ form_dividir.observaciones }}</div>
+              <div class="col-12"><button class="btn btn-primario btn-sm">Dividir</button></div></form></div></div></div>
+        <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#op2" type="button"><i class="bi bi-intersect me-2"></i>Combinar con otros lotes</button></h3>
+          <div id="op2" class="accordion-collapse collapse" data-bs-parent="#ops"><div class="accordion-body">
+            <form method="post" action="{% url 'lotes:combinar' obj.pk %}" class="row g-2">{% csrf_token %}
+              <div class="col-md-8"><label class="form-label">{{ form_combinar.lotes.label }}</label>{{ form_combinar.lotes }}<div class="form-text">Solo aparecen sus lotes del mismo producto con cantidad disponible.</div></div>
+              <div class="col-md-4"><label class="form-label">{{ form_combinar.ubicacion.label }}</label>{{ form_combinar.ubicacion }}</div>
+              <div class="col-12"><button class="btn btn-primario btn-sm">Combinar</button></div></form></div></div></div>
+        <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#op3" type="button"><i class="bi bi-gear me-2"></i>Transformar (pulpa, conserva…)</button></h3>
+          <div id="op3" class="accordion-collapse collapse" data-bs-parent="#ops"><div class="accordion-body">
+            <form method="post" action="{% url 'lotes:transformar' obj.pk %}" class="row g-2">{% csrf_token %}
+              {% for c in form_transformar %}<div class="col-md-6"><label class="form-label">{{ c.label }}</label>{{ c }}{% if c.help_text %}<div class="form-text">{{ c.help_text }}</div>{% endif %}</div>{% endfor %}
+              <div class="col-12"><button class="btn btn-primario btn-sm">Registrar transformación</button></div></form></div></div></div>
+        {% endif %}
+        {% if puede_retirar %}
+        <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed text-danger" data-bs-toggle="collapse" data-bs-target="#op4" type="button"><i class="bi bi-exclamation-octagon me-2"></i>Retirar del mercado</button></h3>
+          <div id="op4" class="accordion-collapse collapse" data-bs-parent="#ops"><div class="accordion-body">
+            <form method="post" action="{% url 'lotes:retirar' obj.pk %}" data-confirmar="¿Retirar el lote {{ obj.codigo }} y sus lotes derivados?">{% csrf_token %}
+              <label class="form-label">Motivo</label>{{ form_motivo.motivo }}
+              <button class="btn btn-peligro btn-sm mt-2">Retirar lote</button></form></div></div></div>
+        {% endif %}
+        {% if es_admin %}
+        <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#op5" type="button"><i class="bi bi-shield-lock me-2"></i>Corregir el origen (solo administrador)</button></h3>
+          <div id="op5" class="accordion-collapse collapse" data-bs-parent="#ops"><div class="accordion-body">
+            <form method="post" action="{% url 'lotes:corregir_origen' obj.pk %}" data-confirmar="El cambio de origen quedará en la auditoría. ¿Continuar?">{% csrf_token %}
+              <label class="form-label">{{ form_corregir.cosechas.label }}</label>{{ form_corregir.cosechas }}
+              <label class="form-label mt-2">{{ form_corregir.justificacion.label }}</label>{{ form_corregir.justificacion }}
+              <button class="btn btn-primario btn-sm mt-2">Guardar corrección</button></form></div></div></div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

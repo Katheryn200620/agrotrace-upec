@@ -1,0 +1,31 @@
+{% extends "comun/detalle.html" %}{% load agro %}
+{% block acciones %}
+{% if puede_despachar %}<a href="{% url 'transporte:despacho_crear' %}?venta={{ obj.pk }}" class="btn btn-primario btn-sm"><i class="bi bi-truck me-1"></i>Despachar venta</a>{% endif %}
+{% endblock %}
+{% block extra %}
+<div class="tarjeta mb-3">
+  <div class="tarjeta-titulo"><h2><i class="bi bi-receipt"></i> {{ obj.codigo }}</h2>{{ obj.get_estado_display|etiqueta }}</div>
+  <dl class="row dato mb-0">
+    <div class="col-sm-6"><dt>Cliente</dt><dd><a href="{{ obj.cliente.get_absolute_url }}">{{ obj.cliente.nombre }}</a> · {{ obj.cliente.get_tipo_display }}</dd></div>
+    <div class="col-sm-6"><dt>Fecha</dt><dd>{{ obj.fecha|valor }}</dd></div>
+    <div class="col-sm-6"><dt>Lote</dt><dd><a href="{{ obj.lote.get_absolute_url }}">{{ obj.lote.codigo }}</a> · {{ obj.lote.producto }}</dd></div>
+    <div class="col-sm-6"><dt>Canal</dt><dd>{{ obj.get_canal_display }}</dd></div>
+    <div class="col-sm-6"><dt>Cantidad</dt><dd>{{ obj.cantidad|valor }} {{ obj.unidad }}</dd></div>
+    <div class="col-sm-6"><dt>Precio unitario</dt><dd>$ {{ obj.precio_unitario|valor }}</dd></div>
+    <div class="col-sm-6"><dt>Total</dt><dd>$ {{ obj.total|valor }}</dd></div>
+    <div class="col-sm-6"><dt>Factura o referencia</dt><dd>{{ obj.referencia|valor }}</dd></div>
+    <div class="col-sm-6"><dt>Despachado</dt><dd>{{ obj.despachado|valor }} {{ obj.unidad }}</dd></div>
+    <div class="col-sm-6"><dt>Por despachar</dt><dd>{{ obj.por_despachar|valor }} {{ obj.unidad }}</dd></div>
+  </dl>
+</div>
+<div class="tarjeta mb-3"><div class="tarjeta-titulo"><h2><i class="bi bi-truck"></i> Despachos de esta venta</h2></div>
+  <ul class="list-unstyled mb-0">{% for d in despachos %}<li class="py-2 border-bottom d-flex justify-content-between"><a href="{{ d.get_absolute_url }}">{{ d.codigo }} · {{ d.cantidad|valor }} {{ obj.unidad }}</a>{{ d.get_estado_display|etiqueta }}</li>
+  {% empty %}<li class="small text-secundario">Aún no se despacha. El área de transporte la verá en «Despachos → Nuevo».</li>{% endfor %}</ul></div>
+{% if puede_anular %}
+<div class="tarjeta"><div class="tarjeta-titulo"><h2><i class="bi bi-x-octagon"></i> Anular venta</h2></div>
+  <form method="post" action="{% url 'comercial:venta_anular' obj.pk %}" class="d-flex gap-2 flex-wrap" data-confirmar="¿Anular la venta? Se liberará la reserva del lote.">{% csrf_token %}
+    <input name="motivo" class="form-control form-control-sm" style="flex:1;min-width:200px" placeholder="Motivo de la anulación" required>
+    <button class="btn btn-sm btn-secundario text-danger">Anular</button></form>
+  <p class="small text-secundario mt-2 mb-0">La venta no se borra: queda anulada en el historial con su motivo.</p></div>
+{% endif %}
+{% endblock %}

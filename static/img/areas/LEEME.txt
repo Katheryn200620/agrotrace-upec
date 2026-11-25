@@ -1,0 +1,11 @@
+Fotografías opcionales de las tarjetas de la página de Inicio.
+
+Si coloca aquí una foto REAL de la planta con estos nombres, la tarjeta la mostrará en lugar de la ilustración:
+  campo.jpg         (Agricultor y proveedor)
+  planta.jpg        (Recepción y transformación)
+  almacen.jpg       (Almacén)
+  distribucion.jpg  (Distribución)
+  clientes.jpg      (Clientes y tienda)
+Y para el fondo grande de bienvenida: static/img/portada.jpg
+
+Tamaño recomendado: 1200 x 600 píxeles. Recargue con Ctrl + F5.

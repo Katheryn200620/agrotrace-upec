@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="mb-3"><a href="{% url 'cuentas:usuarios' %}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Usuarios</a></div>
+<form method="post" class="tarjeta" style="max-width:860px" novalidate>{% csrf_token %}
+  <div class="ayuda mb-3"><i class="bi bi-shield-lock me-1"></i>Solo el administrador general asigna áreas y permisos. Cada operador trabaja únicamente con los registros de su área que tiene a cargo.</div>
+  <h3 class="h6 text-secundario text-uppercase">Datos de la cuenta</h3>
+  <div class="row g-3 mb-4">
+    {% for c in form %}{% if c.name in "username first_name last_name email cargo" %}<div class="col-md-6"><label class="form-label {% if c.field.required %}obligatorio{% endif %}">{{ c.label }}</label>{{ c }}{% for e in c.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>{% endif %}{% endfor %}
+  </div>
+  <h3 class="h6 text-secundario text-uppercase">Rol, área y permisos</h3>
+  <div class="row g-3 mb-4">
+    <div class="col-12"><div class="form-check">{{ form.es_admin_general }}<label class="form-check-label" for="{{ form.es_admin_general.id_for_label }}">{{ form.es_admin_general.label }}</label></div></div>
+    <div class="col-md-6"><label class="form-label">{{ form.area.label }}</label>{{ form.area }}{% for e in form.area.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+    <div class="col-md-6 d-flex flex-column justify-content-end gap-1">
+      {% for c in form %}{% if c.name in "puede_crear puede_editar puede_eliminar" %}<div class="form-check">{{ c }}<label class="form-check-label" for="{{ c.id_for_label }}">{{ c.label }}</label></div>{% endif %}{% endfor %}
+    </div>
+  </div>
+  <h3 class="h6 text-secundario text-uppercase">Contraseña</h3>
+  <div class="row g-3">
+    {% for c in form %}{% if c.name in "password1 password2" %}<div class="col-md-6"><label class="form-label {% if c.field.required %}obligatorio{% endif %}">{{ c.label }}</label>{{ c }}<div class="form-text">{{ c.help_text }}</div>{% for e in c.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>{% endif %}{% endfor %}
+  </div>
+  <div class="d-flex gap-2 mt-4"><button class="btn btn-primario">Guardar</button><a href="{% url 'cuentas:usuarios' %}" class="btn btn-secundario">Cancelar</a></div>
+</form>
+{% endblock %}

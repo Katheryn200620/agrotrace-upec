@@ -1,0 +1,30 @@
+{% extends "base.html" %}{% load agro %}
+{% block contenido %}
+<p class="text-secundario">Consulte la procedencia de los lotes con filtros y descargue los resultados. Los reportes muestran solo los datos que su cuenta puede ver.</p>
+<form method="get" class="tarjeta mb-3"><div class="row g-2">
+  <div class="col-md-3"><label class="form-label small">Productor</label><select name="productor" class="form-select form-select-sm"><option value="">Todos</option>{% for p in productores %}<option value="{{ p.pk }}" {% if g.productor == p.pk|stringformat:'s' %}selected{% endif %}>{{ p.codigo }} · {{ p.nombre_publico }}</option>{% endfor %}</select></div>
+  <div class="col-md-3"><label class="form-label small">Parcela</label><select name="parcela" class="form-select form-select-sm"><option value="">Todas</option>{% for p in parcelas %}<option value="{{ p.pk }}" {% if g.parcela == p.pk|stringformat:'s' %}selected{% endif %}>{{ p.codigo }} · {{ p.nombre }}</option>{% endfor %}</select></div>
+  <div class="col-md-3"><label class="form-label small">Producto</label><select name="producto" class="form-select form-select-sm"><option value="">Todos</option>{% for p in productos %}<option value="{{ p.pk }}" {% if g.producto == p.pk|stringformat:'s' %}selected{% endif %}>{{ p.nombre }}</option>{% endfor %}</select></div>
+  <div class="col-md-3"><label class="form-label small">Código de lote</label><input name="lote" value="{{ g.lote }}" class="form-control form-control-sm"></div>
+  <div class="col-md-2"><label class="form-label small">Cosecha desde</label><input type="date" name="desde" value="{{ g.desde }}" class="form-control form-control-sm"></div>
+  <div class="col-md-2"><label class="form-label small">Cosecha hasta</label><input type="date" name="hasta" value="{{ g.hasta }}" class="form-control form-control-sm"></div>
+  <div class="col-md-3"><label class="form-label small">Ubicación (cantón o parroquia)</label><input name="ubicacion" value="{{ g.ubicacion }}" class="form-control form-control-sm"></div>
+  <div class="col-md-2"><label class="form-label small">Estado del lote</label><select name="estado" class="form-select form-select-sm"><option value="">Todos</option>{% for v, t in estados %}<option value="{{ v }}" {% if g.estado == v %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></div>
+  <div class="col-md-3"><label class="form-label small">Destino</label><select name="destino" class="form-select form-select-sm"><option value="">Todos</option>{% for v, t in destinos %}<option value="{{ v }}" {% if g.destino == v %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></div>
+  <div class="col-12 d-flex gap-2"><button class="btn btn-primario btn-sm">Generar reporte</button><a href="?{{ params }}&exportar=csv" class="btn btn-secundario btn-sm"><i class="bi bi-download me-1"></i>Descargar CSV</a><a href="?" class="btn btn-link btn-sm text-secundario">Limpiar</a></div>
+</div></form>
+<div class="tabla-contenedor mb-4"><div class="table-responsive"><table class="table tabla">
+  <thead><tr>{% for h in encabezado %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+  <tbody>{% for f in filas %}<tr data-href="{{ f.12.get_absolute_url }}">{% for c in f|slice:":12" %}<td class="small">{% if forloop.first %}<strong>{{ c }}</strong>{% else %}{{ c|etiqueta }}{% endif %}</td>{% endfor %}</tr>
+  {% empty %}<tr><td colspan="12"><div class="vacio"><i class="bi bi-inbox"></i>No hay lotes con esos filtros.</div></td></tr>{% endfor %}</tbody>
+</table></div></div>
+<p class="small text-secundario">{{ total }} lote(s) encontrados.</p>
+<div class="row g-3">
+  <div class="col-lg-7"><div class="tarjeta"><div class="tarjeta-titulo"><h2><i class="bi bi-database-down"></i> Datos para Power BI y el análisis</h2></div>
+    <div class="row g-2">{% for clave, titulo_d in datasets %}<div class="col-md-6"><a href="{% url 'reportes:dataset' clave %}" class="acceso"><i class="bi bi-filetype-csv"></i>{{ titulo_d }}</a></div>{% endfor %}</div>
+    <p class="small text-secundario mt-2 mb-0">CSV separado por punto y coma, con tildes. Los datos personales aparecen como «(reservado)» si su cuenta no puede verlos.</p></div></div>
+  <div class="col-lg-5"><div class="tarjeta"><div class="tarjeta-titulo"><h2><i class="bi bi-stopwatch"></i> Experimentos</h2></div>
+    {% for metodo, d in e1.items %}<div class="d-flex justify-content-between small border-bottom py-1"><span>E1 · {{ metodo }}</span><strong>{{ d.0|valor }} min · {{ d.1 }} %</strong></div>{% empty %}<p class="small text-secundario">E1: aún no hay simulacros de retiro.</p>{% endfor %}
+    <div class="d-flex justify-content-between small py-1"><span>E3 · Escaneos del QR</span><strong>{{ escaneos }}</strong></div></div></div>
+</div>
+{% endblock %}

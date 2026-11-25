@@ -1,0 +1,16 @@
+{% load static %}<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Consulta de procedencia · AgroTrace-UPEC</title>
+<link rel="stylesheet" href="{% static 'vendor/bootstrap.min.css' %}"><link rel="stylesheet" href="{% static 'vendor/bootstrap-icons.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/estilos.css' %}?v=20261125">{% include "comun/tema_inicial.html" %}</head>
+<body>
+<header class="publica-cabecera">{% include "comun/paisaje.html" %}<span class="sello"><i class="bi bi-qr-code-scan"></i> AgroTrace-UPEC</span><h1>Consulte el origen de su producto</h1>
+  <div class="sub">Escanee el QR del empaque o escriba el código del lote</div></header>
+<main class="publica-cuerpo">
+  <div class="tarjeta">
+    {% for m in messages %}<div class="alert alert-warning py-2 small">{{ m }}</div>{% endfor %}
+    <form method="get" class="d-flex gap-2"><input name="codigo" value="{{ codigo }}" class="form-control" placeholder="Ej.: H26100501" autofocus required>
+      <button class="btn btn-primario">Consultar</button></form>
+    <p class="small text-secundario mt-3 mb-0">Solo se muestra información pública: no se publican datos personales de productores ni datos internos de la universidad.</p>
+  </div>
+</main></body></html>

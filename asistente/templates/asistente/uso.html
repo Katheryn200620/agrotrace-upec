@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block contenido %}
+<header class="encabezado-area"><div class="d-flex gap-3"><span class="sello-area"><i class="bi bi-chat-square-text"></i></span>
+  <div><div class="area-etq">Área 10 · Personal y seguridad</div><h2>Uso del asistente y la voz</h2>
+  <p>Registro real de preguntas y comandos. Sirve como evidencia en las pruebas con usuarios.</p></div></div></header>
+<div class="row g-3 mb-3 row-cols-2 row-cols-xl-4">
+  <div class="col"><div class="kpi"><div class="cabeza"><span class="icono"><i class="bi bi-chat"></i></span><span class="etiqueta">Interacciones</span></div><div class="valor">{{ total }}</div></div></div>
+  <div class="col"><div class="kpi tierra"><div class="cabeza"><span class="icono"><i class="bi bi-hand-thumbs-up"></i></span><span class="etiqueta">Marcadas como útiles</span></div><div class="valor">{{ utiles }}</div></div></div>
+  <div class="col"><div class="kpi peligro"><div class="cabeza"><span class="icono"><i class="bi bi-hand-thumbs-down"></i></span><span class="etiqueta">Marcadas como no útiles</span></div><div class="valor">{{ no_utiles }}</div></div></div>
+  <div class="col"><div class="kpi azul"><div class="cabeza"><span class="icono"><i class="bi bi-mic"></i></span><span class="etiqueta">Por canal</span></div>
+    <div class="pie-kpi mt-2">{% for c in por_canal %}{{ c.canal }}: {{ c.n }}{% if not forloop.last %} · {% endif %}{% empty %}sin datos{% endfor %}</div></div></div>
+</div>
+<div class="tarjeta"><div class="tarjeta-titulo"><h2><i class="bi bi-list"></i> Últimas interacciones</h2></div>
+  <div class="table-responsive"><table class="table tabla"><thead><tr><th>Fecha</th><th>Usuario</th><th>Canal</th><th>Pregunta o comando</th><th>Intención</th><th>Fuente</th><th>Útil</th></tr></thead><tbody>
+  {% for m in ultimos %}<tr><td>{{ m.fecha|date:"d/m/Y H:i" }}</td><td>{{ m.usuario }}</td><td>{{ m.get_canal_display }}</td><td>{{ m.pregunta|truncatechars:70 }}</td><td>{{ m.intencion }}</td><td>{{ m.get_fuente_display }}</td>
+    <td>{% if m.resuelto is None %}–{% elif m.resuelto %}Sí{% else %}No{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="7"><div class="vacio">Todavía no hay interacciones registradas.</div></td></tr>{% endfor %}</tbody></table></div></div>
+{% endblock %}

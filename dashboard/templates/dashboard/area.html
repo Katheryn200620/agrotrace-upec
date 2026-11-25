@@ -1,0 +1,68 @@
+{% extends "base.html" %}{% load static agro %}
+{% block contenido %}
+<header class="encabezado-area">
+  <div class="d-flex gap-3 align-items-start">
+    <span class="sello-area"><i class="bi {{ area_icono }}"></i></span>
+    <div><div class="area-etq">Área {{ area_n }}</div><h2>{{ titulo }}</h2><p>{{ descripcion }}</p></div>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    {% for it in accesos %}{% if it.texto != "Panel del área" and it.texto != "Analítica de datos" and it.texto != "Indicadores generales" %}
+      <a href="{{ it.url }}" class="btn btn-secundario btn-sm"{% if it.externo %} target="_blank"{% endif %}><i class="bi {{ it.icono }} me-1"></i>{{ it.texto }}</a>{% endif %}{% endfor %}
+  </div>
+</header>
+
+{% if clave == "reportes" %}
+<form method="get" class="tarjeta mb-3 d-flex flex-wrap gap-2 align-items-end">
+  <div><label class="form-label">Desde</label><input type="date" name="desde" value="{{ desde }}" class="form-control form-control-sm"></div>
+  <div><label class="form-label">Hasta</label><input type="date" name="hasta" value="{{ hasta }}" class="form-control form-control-sm"></div>
+  <button class="btn btn-primario btn-sm">Aplicar fechas</button>{% if desde or hasta %}<a href="?" class="btn btn-secundario btn-sm">Quitar filtro</a>{% endif %}
+  <span class="small text-secundario ms-auto">Los indicadores se calculan con los registros de la base de datos.</span>
+</form>
+{% endif %}
+
+{% if datos.aviso %}<div class="alert alert-info py-2 small"><i class="bi bi-info-circle me-1"></i>{{ datos.aviso }}</div>{% endif %}
+
+<div class="row g-3 mb-3 row-cols-1 row-cols-sm-2 row-cols-xl-4">
+  {% for k in datos.kpis %}<div class="col"><div class="kpi {{ k.color }}">
+    <div class="cabeza"><span class="icono"><i class="bi {{ k.icono }}"></i></span><span class="etiqueta">{{ k.etiqueta }}</span></div>
+    <div class="valor">{{ k.valor }}</div>{% if k.pie %}<div class="pie-kpi">{{ k.pie }}</div>{% endif %}</div></div>{% endfor %}
+</div>
+
+<div class="row g-3 mb-3">
+  {% for g in graficos %}
+  <div class="col-lg-6">
+    <div class="tarjeta h-100">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-bar-chart"></i> {{ g.titulo }}</h2>{% if g.unidad %}<span class="small text-secundario">{{ g.unidad }}</span>{% endif %}</div>
+      {% if g.vacio %}
+        <div class="vacio grafico-vacio"><i class="bi bi-graph-up"></i>Todavía no hay datos para esta gráfica. Aparecerá cuando se registre información.</div>
+      {% else %}
+        <div class="caja-grafico"><canvas id="{{ g.id }}" aria-label="{{ g.titulo }}" role="img"></canvas></div>
+      {% endif %}
+      {% if g.nota %}<p class="small text-secundario mt-2 mb-0">{{ g.nota }}</p>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% if datos.configuracion %}
+<div class="tarjeta mb-3"><div class="tarjeta-titulo"><h2><i class="bi bi-sliders"></i> Estado de las configuraciones</h2><span class="small text-secundario">Se ajustan en el archivo .env</span></div>
+  <ul class="list-unstyled mb-0">{% for nombre, ok in datos.configuracion %}<li class="d-flex justify-content-between py-2 border-bottom"><span>{{ nombre }}</span>
+    {% if ok %}<span class="etq etq-verde">Configurado</span>{% else %}<span class="etq etq-ambar">Pendiente</span>{% endif %}</li>{% endfor %}</ul></div>
+{% endif %}
+
+{% if datos.tabla %}
+<div class="tarjeta">
+  <div class="tarjeta-titulo"><h2><i class="bi bi-table"></i> {{ datos.tabla.0 }}</h2></div>
+  <div class="table-responsive"><table class="table tabla">
+    <thead><tr>{% for h in datos.tabla.1 %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+    <tbody>{% for enlace, celdas in datos.tabla.2 %}<tr{% if enlace %} data-href="{{ enlace }}"{% endif %}>{% for c in celdas %}<td>{{ c|valor }}</td>{% endfor %}</tr>
+    {% empty %}<tr><td colspan="{{ datos.tabla.1|length }}"><div class="vacio"><i class="bi bi-check2-circle"></i>No hay registros para mostrar.</div></td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% endif %}
+{{ graficos|json_script:"datos-panel" }}
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'vendor/chart.umd.js' %}"></script>
+<script>AgroPanel(JSON.parse(document.getElementById("datos-panel").textContent));</script>
+{% endblock %}

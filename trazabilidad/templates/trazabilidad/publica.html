@@ -1,0 +1,44 @@
+{% load static agro %}<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ lote.producto.nombre }} · Procedencia UPEC</title>
+<link rel="stylesheet" href="{% static 'vendor/bootstrap.min.css' %}"><link rel="stylesheet" href="{% static 'vendor/bootstrap-icons.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/estilos.css' %}?v=20261125">{% include "comun/tema_inicial.html" %}</head>
+<body>
+<header class="publica-cabecera">
+  {% include "comun/paisaje.html" %}
+  <span class="sello"><i class="bi bi-upc-scan"></i> Consulta de procedencia · GS1 Digital Link</span>
+  <h1>{{ lote.producto.nombre }}</h1>
+  <div class="sub">Lote {{ lote.codigo }} · Categoría {{ lote.get_categoria_display }}</div>
+</header>
+<main class="publica-cuerpo">
+  {% if lote.estado == 'retirado' %}<div class="alert alert-danger"><strong>Aviso importante:</strong> este lote fue retirado del mercado. No lo consuma y comuníquese con la UPEC indicando el código {{ lote.codigo }}.</div>{% endif %}
+  <div class="tarjeta mb-3">
+    <div class="tarjeta-titulo"><h2><i class="bi bi-geo-alt"></i> ¿De dónde viene?</h2><span class="etq etq-verde">{{ lote.get_estado_display }}</span></div>
+    {% for p in productores %}<p class="mb-1"><strong>{{ p.nombre_publico }}</strong></p><p class="small text-secundario mb-2">{{ p.ubicacion }}, Ecuador</p>{% endfor %}
+    {% for p in parcelas %}<p class="small mb-1"><i class="bi bi-flower2 text-success"></i> Parcela {{ p.nombre }} ({{ p.codigo }}) · {{ p.cultivo.nombre }} {{ p.variedad }}{% if p.altitud_msnm %} · {{ p.altitud_msnm }} m s. n. m.{% endif %}</p>{% endfor %}
+  </div>
+  <div class="tarjeta mb-3">
+    <div class="row text-center g-2">
+      <div class="col-4"><div class="small text-secundario">Cosecha</div><strong>{{ fecha_cosecha|valor }}</strong></div>
+      <div class="col-4"><div class="small text-secundario">Lote creado</div><strong>{{ lote.fecha_creacion|valor }}</strong></div>
+      <div class="col-4"><div class="small text-secundario">Consumir antes de</div><strong>{{ lote.fecha_vencimiento|valor }}</strong></div>
+    </div>
+    <hr><div class="d-flex justify-content-between small"><span class="text-secundario">Cantidad registrada</span><strong>{{ lote.cantidad_inicial|valor }} {{ lote.unidad }}</strong></div>
+    {% for d in despachos %}<div class="d-flex justify-content-between small mt-1"><span class="text-secundario">Destino</span><strong>{{ d.get_tipo_destino_display }}{% if d.tipo_destino != 'cliente' %} · {{ d.destino }}{% endif %}</strong></div>{% endfor %}
+  </div>
+  <div class="tarjeta mb-3">
+    <div class="tarjeta-titulo"><h2><i class="bi bi-signpost-split"></i> Recorrido del producto</h2></div>
+    <ul class="tiempo">
+      {% for e in eventos %}{% if e.disposicion != 'non_conformant' %}
+        <li class="{{ e.tipo }}"><span class="punto"><i class="bi {{ e.tipo|icono_evento }}"></i></span>
+          <div class="d-flex justify-content-between"><span class="titulo-ev">{{ e.get_tipo_display }}</span><span class="meta">{{ e.fecha_hora|date:"d/m/Y" }}</span></div>
+          <div class="meta">{{ e.area_responsable }}</div></li>
+      {% endif %}{% endfor %}
+    </ul>
+  </div>
+  <p class="text-center small text-secundario">Última actualización: {{ ultima|valor }} · GTIN {{ lote.producto.gtin }}<br>
+    Esta ficha muestra la información de procedencia registrada por la Universidad Politécnica Estatal del Carchi.
+    No constituye una certificación orgánica ni sanitaria.</p>
+</main>
+</body></html>

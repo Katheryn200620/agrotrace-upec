@@ -1,0 +1,23 @@
+{% extends "comun/detalle.html" %}{% load agro %}
+{% block acciones %}{% if puede_editar and not recepcion %}<a href="{% url 'cosechas:recepcion_crear' %}?cosecha={{ obj.pk }}" class="btn btn-primario btn-sm"><i class="bi bi-box-arrow-in-down me-1"></i>Registrar recepción</a>{% endif %}
+<a href="{% url 'trazabilidad:contrato_cosecha' obj.pk %}" target="_blank" class="btn btn-secundario btn-sm"><i class="bi bi-braces me-1"></i>Contrato JSON</a>{% endblock %}
+{% block extra %}
+<div class="tarjeta mb-3"><div class="tarjeta-titulo"><h2><i class="bi bi-box-arrow-in-down"></i> Recepción en planta</h2>
+  {% if recepcion and puede_editar %}<a href="{% url 'cosechas:clasificacion_crear' %}?recepcion={{ recepcion.pk }}" class="btn btn-sm btn-secundario">Clasificar</a>{% endif %}</div>
+  {% if recepcion %}
+    <div class="row text-center g-2 mb-3">
+      <div class="col"><div class="small text-secundario">Recibido</div><strong>{{ recepcion.peso_recibido|valor }} kg</strong></div>
+      <div class="col"><div class="small text-secundario">Temperatura</div><strong>{{ recepcion.temperatura|valor }} °C</strong></div>
+      <div class="col"><div class="small text-secundario">Clasificado</div><strong>{{ recepcion.kg_clasificados|valor }} kg</strong></div>
+      <div class="col"><div class="small text-secundario">Rechazo</div><strong>{{ recepcion.porcentaje_rechazo }} %</strong></div>
+    </div>
+    <table class="table tabla"><thead><tr><th>Categoría</th><th>Kg</th><th>Método</th><th>Causa</th></tr></thead><tbody>
+    {% for c in clasificaciones %}<tr data-href="{{ c.get_absolute_url }}"><td>{{ c.get_categoria_display|etiqueta }}</td><td>{{ c.cantidad|valor }}</td><td>{{ c.get_metodo_display }}</td><td>{{ c.causa_rechazo|valor }}</td></tr>
+    {% empty %}<tr><td colspan="4" class="text-secundario small">Falta clasificar.</td></tr>{% endfor %}</tbody></table>
+  {% else %}<p class="text-secundario small mb-0">La cosecha aún no se recibe en planta.</p>{% endif %}
+</div>
+<div class="tarjeta mb-3"><div class="tarjeta-titulo"><h2><i class="bi bi-box-seam"></i> Lotes formados</h2></div>
+  {% for l in lotes %}<a href="{{ l.get_absolute_url }}" class="etq etq-verde text-decoration-none me-1">{{ l.codigo }}</a>{% empty %}<span class="text-secundario small">Todavía no forma parte de un lote.</span>{% endfor %}</div>
+<div class="tarjeta"><div class="tarjeta-titulo"><h2><i class="bi bi-clock-history"></i> Eventos</h2></div>
+  <ul class="tiempo">{% for e in eventos %}<li class="{{ e.tipo }}"><span class="punto"><i class="bi {{ e.tipo|icono_evento }}"></i></span><div class="titulo-ev">{{ e.get_tipo_display }}</div><div class="small">{{ e.descripcion }}</div><div class="meta">{{ e.fecha_hora|valor }} · {{ e.lugar }}</div></li>{% endfor %}</ul></div>
+{% endblock %}

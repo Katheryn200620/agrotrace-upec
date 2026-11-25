@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block contenido %}
+<header class="encabezado-area"><div class="d-flex gap-3"><span class="sello-area"><i class="bi bi-mic"></i></span>
+  <div><div class="area-etq">Área 1 · Panel general</div><h2>Control por voz</h2>
+  <p>Navegue con comandos hablados. Pulse el micrófono de la barra superior (o el botón de abajo), espere «Escuchando…» y diga el comando.</p></div></div>
+  <button type="button" class="btn btn-primario" data-voz><i class="bi bi-mic-fill me-1"></i>Probar un comando</button></header>
+<div class="alert alert-info small" data-voz-aviso><i class="bi bi-info-circle me-1"></i><span data-voz-soporte>Comprobando si su navegador admite voz…</span></div>
+<div class="row g-3">
+  <div class="col-lg-7"><div class="tarjeta h-100"><div class="tarjeta-titulo"><h2><i class="bi bi-list-check"></i> Comandos disponibles</h2></div>
+    <div class="table-responsive"><table class="table tabla"><thead><tr><th>Diga</th><th>Qué hace</th></tr></thead><tbody>
+      <tr><td>«Ir al inicio»</td><td>Abre el panel principal</td></tr>
+      <tr><td>«Abrir productores» · «abrir parcelas» · «abrir cosechas»</td><td>Abre el módulo, si su cuenta tiene acceso</td></tr>
+      <tr><td>«Consultar inventario»</td><td>Abre el inventario (o pregunta al asistente)</td></tr>
+      <tr><td>«Buscar producto papa»</td><td>Busca en el catálogo de productos</td></tr>
+      <tr><td>«Consultar lote H 26 11 22 01»</td><td>Abre la ficha del lote</td></tr>
+      <tr><td>«Abrir estadísticas» · «abrir indicadores»</td><td>Abre el panel de analítica</td></tr>
+      <tr><td>«Abrir alertas» · «abrir ventas» · «abrir despachos»</td><td>Abre esa sección</td></tr>
+      <tr><td>«Asistente, ¿qué ventas están pendientes?»</td><td>Envía la pregunta al asistente virtual</td></tr>
+      <tr><td>«Ayuda»</td><td>Muestra esta página</td></tr>
+    </tbody></table></div></div></div>
+  <div class="col-lg-5">
+    <div class="tarjeta mb-3"><div class="tarjeta-titulo"><h2><i class="bi bi-exclamation-diamond"></i> Compatibilidad y permisos</h2></div>
+      <ul class="small mb-0 ps-3"><li>Funciona en <strong>Google Chrome</strong> y <strong>Microsoft Edge</strong> (computador y Android). Firefox no tiene reconocimiento de voz.</li>
+        <li>El navegador pide permiso para usar el micrófono la primera vez: elija «Permitir».</li>
+        <li>Requiere <strong>http://127.0.0.1</strong>, <strong>localhost</strong> o una dirección <strong>https</strong>. Desde otra IP sin https el navegador bloquea el micrófono.</li>
+        <li>El reconocimiento lo hace el servicio del navegador y necesita internet.</li>
+        <li>Siempre puede usar el menú y el teclado: la voz es una alternativa.</li></ul></div>
+    <div class="tarjeta"><div class="tarjeta-titulo"><h2><i class="bi bi-clock-history"></i> Mis últimos comandos</h2></div>
+      <ul class="list-unstyled small mb-0">{% for u in usos %}<li class="py-1 border-bottom">«{{ u.pregunta }}» → {{ u.respuesta|default:"sin acción" }} <span class="text-secundario">({{ u.fecha|date:"d/m H:i" }})</span></li>
+      {% empty %}<li class="text-secundario">Todavía no ha usado comandos de voz.</li>{% endfor %}</ul></div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script>
+document.querySelector("[data-voz-soporte]").textContent = (window.SpeechRecognition || window.webkitSpeechRecognition)
+  ? "Su navegador admite el control por voz." : "Su navegador no admite el reconocimiento de voz. Use Google Chrome o Microsoft Edge.";
+</script>{% endblock %}

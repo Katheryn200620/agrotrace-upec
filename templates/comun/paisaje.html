@@ -1,0 +1,43 @@
+<svg class="paisaje" viewBox="0 0 900 260" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
+  <defs>
+    <pattern id="pa-surcos-a" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(-24)">
+      <rect width="9" height="9" class="pa-parcela-a"/><rect width="2" height="9" class="pa-surco"/></pattern>
+    <pattern id="pa-surcos-b" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(18)">
+      <rect width="8" height="8" class="pa-parcela-b"/><rect width="2" height="8" class="pa-surco"/></pattern>
+    <pattern id="pa-surcos-c" width="11" height="11" patternUnits="userSpaceOnUse" patternTransform="rotate(-8)">
+      <rect width="11" height="11" class="pa-parcela-c"/><circle cx="5" cy="5" r="1.6" class="pa-surco"/></pattern>
+    <clipPath id="pa-clip-medio"><path d="M0 178 C110 140 230 138 340 158 C450 178 560 128 690 132 C780 135 850 150 900 160 L900 260 L0 260Z"/></clipPath>
+    <clipPath id="pa-clip-cerca"><path d="M0 222 C150 192 290 198 420 214 C560 230 700 196 900 206 L900 260 L0 260Z"/></clipPath>
+  </defs>
+  <circle cx="735" cy="68" r="34" class="pa-sol"/>
+  <circle cx="735" cy="68" r="52" class="pa-halo"/>
+  <!-- Cordillera al fondo -->
+  <path d="M0 160 L95 112 L160 132 L270 66 L350 118 L430 92 L520 136 L610 104 L700 140 L790 98 L900 134 L900 260 L0 260Z" class="pa-lejos"/>
+  <path d="M270 66 L252 80 L262 78 L270 86 L279 78 L290 81Z M790 98 L776 108 L785 107 L791 113 L798 107 L806 109Z" class="pa-nieve"/>
+  <!-- Colina media con parcelas en mosaico -->
+  <g clip-path="url(#pa-clip-medio)">
+    <rect x="0" y="120" width="900" height="140" class="pa-medio"/>
+    <path d="M0 150 L150 140 L190 260 L0 260Z" fill="url(#pa-surcos-a)"/>
+    <path d="M150 140 L300 150 L330 205 L175 210Z" fill="url(#pa-surcos-b)"/>
+    <path d="M300 150 L470 160 L455 210 L330 205Z" class="pa-parcela-d"/>
+    <path d="M470 160 L600 130 L640 200 L455 210Z" fill="url(#pa-surcos-c)"/>
+    <path d="M600 130 L760 128 L780 195 L640 200Z" fill="url(#pa-surcos-a)"/>
+    <path d="M760 128 L900 150 L900 205 L780 195Z" class="pa-parcela-d"/>
+    <path d="M175 210 L330 205 L340 260 L190 260Z" class="pa-parcela-d"/>
+    <path d="M330 205 L455 210 L470 260 L340 260Z" fill="url(#pa-surcos-a)"/>
+    <path d="M455 210 L640 200 L650 260 L470 260Z" fill="url(#pa-surcos-b)"/>
+    <path d="M640 200 L780 195 L800 260 L650 260Z" fill="url(#pa-surcos-c)"/>
+    <path d="M150 140 L190 260 M300 150 L340 260 M470 160 L455 210 L470 260 M600 130 L650 260 M760 128 L800 260 M0 150 L900 150 M175 210 L900 196" class="pa-cerco"/>
+  </g>
+  <!-- Colina cercana -->
+  <g clip-path="url(#pa-clip-cerca)">
+    <rect x="0" y="180" width="900" height="80" class="pa-cerca"/>
+    <path d="M380 190 L620 190 L640 260 L360 260Z" fill="url(#pa-surcos-b)" opacity=".55"/>
+  </g>
+  <!-- Árboles (eucaliptos y alisos) -->
+  <g class="pa-arbol">
+    <ellipse cx="96" cy="196" rx="11" ry="20"/><rect x="94" y="208" width="4" height="14"/>
+    <ellipse cx="116" cy="202" rx="8" ry="14"/><rect x="114" y="210" width="3" height="10"/>
+    <ellipse cx="842" cy="188" rx="12" ry="22"/><rect x="840" y="200" width="4" height="16"/>
+  </g>
+</svg>

@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% load agro %}
+{% block contenido %}
+<p class="text-secundario">{% if propio %}Acciones que usted realizó en el sistema.{% else %}Registro de acciones importantes. No se puede modificar ni borrar.{% endif %}</p>
+{% if not propio %}
+<form class="tarjeta py-2 mb-3 row g-2" method="get">
+  <div class="col-md-3"><input name="usuario" value="{{ f.usuario }}" class="form-control" placeholder="Usuario"></div>
+  <div class="col-md-3"><select name="accion" class="form-select"><option value="">Acción: todas</option>{% for v, t in acciones %}<option value="{{ v }}" {% if v == f.accion %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></div>
+  <div class="col-md-2"><input type="date" name="desde" value="{{ f.desde }}" class="form-control"></div>
+  <div class="col-md-2"><input type="date" name="hasta" value="{{ f.hasta }}" class="form-control"></div>
+  <div class="col-md-2"><button class="btn btn-secundario w-100">Filtrar</button></div>
+</form>{% endif %}
+<div class="tabla-contenedor"><div class="table-responsive"><table class="table tabla">
+  <thead><tr><th>Fecha</th>{% if not propio %}<th>Usuario</th><th>Área</th>{% endif %}<th>Acción</th><th>Registro</th><th>Detalle</th><th>IP</th></tr></thead>
+  <tbody>{% for a in pagina %}
+    <tr><td class="text-nowrap small">{{ a.fecha|valor }}</td>{% if not propio %}<td>{{ a.usuario_nombre }}</td><td class="small">{{ a.area|valor }}</td>{% endif %}
+      <td><span class="etq {% if a.accion == 'acceso_denegado' or a.accion == 'ingreso_fallido' %}etq-rojo{% elif a.accion == 'eliminar' %}etq-ambar{% elif a.accion == 'editar' %}etq-azul{% else %}etq-verde{% endif %}">{{ a.get_accion_display }}</span></td>
+      <td class="small">{{ a.modulo }} {{ a.objeto|truncatechars:40 }}</td>
+      <td class="small">{{ a.detalle|truncatechars:70 }}{% if a.justificacion %}<br><em>Justificación: {{ a.justificacion }}</em>{% endif %}
+        {% if a.cambios %}<details><summary class="text-secundario">Ver cambios</summary><pre class="small mb-0" style="white-space:pre-wrap">{{ a.cambios|pprint }}</pre></details>{% endif %}</td>
+      <td class="small text-secundario">{{ a.ip|valor }}</td></tr>
+  {% empty %}<tr><td colspan="7"><div class="vacio"><i class="bi bi-inbox"></i>Sin registros.</div></td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% if pagina.has_other_pages %}<nav class="d-flex justify-content-end gap-2 mt-3">
+  {% if pagina.has_previous %}<a class="btn btn-sm btn-secundario" href="{% url_con page=pagina.previous_page_number %}">Anterior</a>{% endif %}
+  {% if pagina.has_next %}<a class="btn btn-sm btn-secundario" href="{% url_con page=pagina.next_page_number %}">Siguiente</a>{% endif %}</nav>{% endif %}
+{% endblock %}

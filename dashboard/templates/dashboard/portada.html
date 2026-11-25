@@ -1,0 +1,185 @@
+{% extends "base.html" %}{% load static agro humanize %}
+{% block pagina %}Inicio{% endblock %}
+{% block contenido %}
+<div class="pagina-inicio">
+
+  {% if datos_demo %}
+  <div class="aviso-demo"><i class="bi bi-info-circle"></i><span><strong>Datos de prueba.</strong> Este sistema tiene la información de ejemplo de <code>cargar_datos_demo</code>; para la entrega registre datos reales de la planta.</span></div>
+  {% endif %}
+
+  <!-- Bienvenida -->
+  <section class="centro-hero">
+    {% include "comun/paisaje.html" %}
+    {% if foto_portada %}<img class="hero-foto" src="{% static foto_portada %}" alt="">{% endif %}
+    <div class="hero-velo"></div>
+    <div class="hero-texto">
+      <div class="hero-eyebrow">UPEC · Sistema de trazabilidad hortofrutícola</div>
+      <h2>Centro de control<br><em>AgroTrace</em></h2>
+      <p>Desde la parcela hasta el cliente. Entre a cada etapa para consultar sus operaciones, registrar movimientos y seguir los lotes.</p>
+      <div class="hero-botones">
+        <a href="#catalogo" class="btn-hero claro">Explorar productos <i class="bi bi-arrow-down-right"></i></a>
+        {% if url_lotes %}<a href="{{ url_lotes }}" class="btn-hero borde">Lotes y trazabilidad QR <i class="bi bi-arrow-up-right"></i></a>
+        {% else %}<a href="{% url 'consulta' %}" target="_blank" class="btn-hero borde">Consultar un lote por QR <i class="bi bi-arrow-up-right"></i></a>{% endif %}
+        <a href="{% url 'panel_procedencia' %}" class="btn-hero borde">Panel de procedencia <i class="bi bi-speedometer2"></i></a>
+      </div>
+    </div>
+    <div class="hero-pie">12 áreas · 1 cadena</div>
+  </section>
+
+  <!-- Cifras -->
+  <div class="franja-kpi">
+    <div class="kpi-claro"><span>Lotes</span><strong>{{ kpi.lotes }}</strong><small>con identificación</small></div>
+    <div class="kpi-claro"><span>Productores</span><strong>{{ kpi.productores }}</strong><small>registrados</small></div>
+    <div class="kpi-claro"><span>Existencias</span><strong>{{ kpi.existencias_kg|floatformat:1 }} kg</strong><small>disponibles en planta</small></div>
+    <div class="kpi-claro"><span>Pedidos</span><strong>{{ kpi.pedidos }}</strong><small>activos en distribución</small></div>
+    <div class="kpi-claro"><span>Ventas</span><strong>{{ kpi.ventas }}</strong><small>registradas</small></div>
+  </div>
+
+  <!-- Etapas -->
+  <section class="bloque-inicio" aria-labelledby="titulo-etapas">
+    <div class="bloque-cabecera">
+      <div><div class="eyebrow-oscuro">Seleccione un área de trabajo</div><h2 id="titulo-etapas" class="titulo-serif">Las cinco etapas de la cadena</h2>
+        <p>Cada tarjeta abre el panel de su área, con sus registros y gráficas.</p></div>
+      <span class="pastilla-rol">{% if admin %}Acceso completo · Administrador{% else %}{{ rol }}{% endif %}</span>
+    </div>
+    <div class="etapas">
+      {% for e in etapas %}
+      <article class="etapa{% if not e.url %} sin-acceso{% endif %}">
+        <div class="etapa-imagen">
+          {% include e.escena %}
+          {% if e.foto %}<img src="{% static e.foto %}" alt="">{% endif %}
+          <span class="etapa-num">Etapa {{ e.n|stringformat:"02d" }} / 05</span>
+          <h3>{{ e.nombre }}</h3>
+        </div>
+        <div class="etapa-cuerpo">
+          <strong>{{ e.sub }}</strong>
+          <p>{{ e.desc }}</p>
+          <small>{{ e.chips }}</small>
+        </div>
+        {% if e.url %}<a href="{{ e.url }}" class="etapa-pie">Explorar esta área <i class="bi bi-arrow-up-right"></i></a>
+        {% else %}<div class="etapa-pie apagado"><i class="bi bi-lock me-1"></i>La gestiona otra área</div>{% endif %}
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Catálogo -->
+  <section id="catalogo" class="bloque-inicio" aria-labelledby="titulo-catalogo">
+    <div class="catalogo-cabecera">
+      <div><div class="eyebrow-oscuro">Productos de la planta</div><h2 id="titulo-catalogo" class="titulo-serif">Catálogo de productos</h2>
+        <p>{{ total_activos }} activo{{ total_activos|pluralize }} · {{ con_foto }} con fotografía. Se actualiza solo cuando se registra o edita un producto.</p></div>
+      <div class="d-flex gap-2 align-items-center flex-wrap">
+        {% if puede_agregar %}<a href="{% url 'productos:producto_crear' %}" class="btn btn-inicio btn-sm"><i class="bi bi-plus-lg me-1"></i>Registrar producto</a>{% endif %}
+        <form method="get" class="buscador-catalogo" role="search" data-catalogo-form>
+          <i class="bi bi-search"></i>
+          <input type="search" name="q" value="{{ q }}" placeholder="Buscar producto por nombre" aria-label="Buscar producto por nombre" data-catalogo-q>
+          <input type="hidden" name="categoria" value="{{ categoria }}" data-catalogo-cat>
+        </form>
+      </div>
+    </div>
+    {% if categorias %}
+    <div class="filtros-categoria" role="group" aria-label="Filtrar por categoría">
+      <button type="button" class="chip-cat{% if not categoria %} activo{% endif %}" data-cat="">Todas <span>{{ productos|length }}</span></button>
+      {% for c, nombre, n in categorias %}<button type="button" class="chip-cat{% if categoria == c %} activo{% endif %}" data-cat="{{ c }}">{{ nombre }} <span>{{ n }}</span></button>{% endfor %}
+      <label class="solo-stock"><input type="checkbox" class="form-check-input mt-0" data-catalogo-stock> Solo con existencias</label>
+    </div>
+    {% endif %}
+    <div class="catalogo" data-catalogo>
+      {% for p in productos %}
+      <article class="producto-tarjeta{% if p.estado != 'activo' %} inactivo{% endif %}" data-nombre="{{ p.nombre|lower }} {{ p.variedad|lower }}" data-cat="{{ p.categoria }}" data-stock="{% if p.existencias %}1{% else %}0{% endif %}">
+        <div class="producto-imagen">
+          {% if p.foto %}<img src="{{ p.foto.url }}" alt="Fotografía de {{ p }}" loading="lazy">
+          {% else %}<div class="sin-foto" role="img" aria-label="{{ p }} sin fotografía registrada">
+              <i class="bi {% if p.categoria == 'fruta' %}bi-tree{% elif p.categoria == 'hortaliza' %}bi-flower1{% elif p.categoria == 'tuberculo' %}bi-basket{% elif p.categoria == 'grano' %}bi-grid-3x3-gap{% else %}bi-box2{% endif %}"></i>
+              <span>Sin fotografía registrada</span></div>{% endif %}
+          <span class="etq-cat">{{ p.get_categoria_display }}</span>
+          {% if p.estado != 'activo' %}<span class="etq-estado">Inactivo</span>{% endif %}
+        </div>
+        <div class="producto-cuerpo">
+          <h3>{{ p.nombre }}{% if p.variedad %} <small>{{ p.variedad }}</small>{% endif %}</h3>
+          {% if p.descripcion %}<p class="descripcion">{{ p.descripcion|truncatechars:110 }}</p>{% endif %}
+          <dl class="producto-datos">
+            {% if p.existencias %}<div><dt>Disponible</dt><dd class="disponible">{{ p.existencias|valor }} {{ p.unidad }}</dd></div>{% endif %}
+            {% if p.precio %}<div><dt>Precio ref.</dt><dd>$ {{ p.precio|valor }} / {{ p.unidad }}</dd></div>{% endif %}
+            {% if p.vida_util_dias %}<div><dt>Vida útil</dt><dd>{{ p.vida_util_dias }} día{{ p.vida_util_dias|pluralize }}</dd></div>{% endif %}
+            {% if p.n_lotes %}<div><dt>Lotes</dt><dd>{{ p.n_lotes }}</dd></div>{% endif %}
+          </dl>
+          {% if p.gtin %}<div class="gtin">GTIN {{ p.gtin }}</div>{% endif %}
+        </div>
+        {% if ver_ficha or p.lote_publico %}
+        <div class="producto-pie">
+          {% if ver_ficha %}<a href="{{ p.get_absolute_url }}"><i class="bi bi-card-text me-1"></i>Ver ficha</a>{% endif %}
+          {% if p.lote_publico %}<a href="{% url 'consulta' %}?codigo={{ p.lote_publico.codigo }}" target="_blank"><i class="bi bi-qr-code me-1"></i>Procedencia del último lote</a>{% endif %}
+        </div>
+        {% endif %}
+      </article>
+      {% empty %}
+      <div class="vacio catalogo-vacio"><i class="bi bi-basket2"></i>Todavía no hay productos registrados.
+        {% if puede_agregar %}<a href="{% url 'productos:producto_crear' %}">Registre el primero</a> con su fotografía.{% else %}El área de productos los registra en el catálogo.{% endif %}</div>
+      {% endfor %}
+    </div>
+    <div class="vacio" data-catalogo-sin-resultados hidden><i class="bi bi-search"></i>No hay productos que coincidan con la búsqueda o el filtro.</div>
+  </section>
+
+  <!-- Últimos lotes y pedidos -->
+  {% if ultimos_lotes is not None or pedidos is not None %}
+  <div class="row g-3 bloque-inicio">
+    {% if ultimos_lotes is not None %}
+    <div class="{% if pedidos is not None %}col-xl-7{% else %}col-12{% endif %}">
+      <div class="tarjeta h-100">
+        <div class="tarjeta-titulo"><h2 class="titulo-serif chico">Últimos lotes</h2>{% if url_lotes %}<a href="{{ url_lotes }}" class="enlace-mini">Ver todos <i class="bi bi-arrow-up-right"></i></a>{% endif %}</div>
+        <div class="table-responsive"><table class="table tabla tabla-inicio"><thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Estado</th></tr></thead><tbody>
+          {% for l in ultimos_lotes %}<tr data-href="{{ l.get_absolute_url }}"><td><strong>{{ l.codigo }}</strong></td><td>{{ l.producto.nombre }}</td><td>{{ l.get_categoria_display }}</td><td>{{ l.get_estado_display|etiqueta }}</td></tr>
+          {% empty %}<tr><td colspan="4"><div class="vacio">Todavía no hay lotes.</div></td></tr>{% endfor %}</tbody></table></div>
+      </div>
+    </div>
+    {% endif %}
+    {% if pedidos is not None %}
+    <div class="{% if ultimos_lotes is not None %}col-xl-5{% else %}col-12{% endif %}">
+      <div class="tarjeta h-100">
+        <div class="tarjeta-titulo"><h2 class="titulo-serif chico">Pedidos y seguimiento</h2>{% if url_ventas %}<a href="{{ url_ventas }}" class="enlace-mini">Abrir distribución <i class="bi bi-arrow-up-right"></i></a>{% endif %}</div>
+        <ul class="lista-pedidos">
+          {% for v in pedidos %}<li><span class="flecha-ped"><i class="bi bi-arrow-right"></i></span>
+            <div><strong>{{ v.cliente.nombre }}</strong><small>{{ v.cantidad|valor }} {{ v.unidad }} · {{ v.lote.codigo }}</small></div>
+            <span class="estado-ped {{ v.estado }}">{{ v.get_estado_display }}</span></li>
+          {% empty %}<li class="vacio">Todavía no hay pedidos.</li>{% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  const tarjetas = [...document.querySelectorAll(".producto-tarjeta")];
+  const q = document.querySelector("[data-catalogo-q]"), cat = document.querySelector("[data-catalogo-cat]");
+  const stock = document.querySelector("[data-catalogo-stock]"), vacio = document.querySelector("[data-catalogo-sin-resultados]");
+  const norm = t => (t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+  function filtrar(actualizarUrl) {
+    const texto = norm(q ? q.value : ""), c = cat ? cat.value : "", s = stock && stock.checked;
+    let visibles = 0;
+    tarjetas.forEach(t => {
+      const ok = (!texto || norm(t.dataset.nombre).includes(texto)) && (!c || t.dataset.cat === c) && (!s || t.dataset.stock === "1");
+      t.hidden = !ok; if (ok) visibles++;
+    });
+    if (vacio) vacio.hidden = visibles > 0 || !tarjetas.length;
+    if (actualizarUrl) {
+      const url = new URL(location.href);
+      texto ? url.searchParams.set("q", q.value) : url.searchParams.delete("q");
+      c ? url.searchParams.set("categoria", c) : url.searchParams.delete("categoria");
+      history.replaceState(null, "", url);
+    }
+  }
+  if (q) { q.addEventListener("input", () => filtrar(true)); q.form.addEventListener("submit", e => { e.preventDefault(); filtrar(true); }); }
+  document.querySelectorAll("button.chip-cat").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".chip-cat").forEach(x => x.classList.toggle("activo", x === b));
+    cat.value = b.dataset.cat; filtrar(true);
+  }));
+  if (stock) stock.addEventListener("change", () => filtrar(true));
+  filtrar(false);
+})();
+</script>
+{% endblock %}

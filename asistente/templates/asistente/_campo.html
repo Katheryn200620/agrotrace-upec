@@ -1,0 +1,10 @@
+{% if campo.is_hidden %}{{ campo }}{% else %}
+<div class="{% if campo.field.widget.input_type == 'checkbox' or campo.name in 'observaciones descripcion cosechas justificacion' %}col-12{% else %}col-md-6{% endif %}">
+  {% if campo.field.widget.input_type == 'checkbox' %}
+    <div class="form-check">{{ campo }}<label class="form-check-label" for="{{ campo.id_for_label }}">{{ campo.label }}</label></div>
+  {% else %}
+    <label class="form-label {% if campo.field.required %}obligatorio{% endif %}" for="{{ campo.id_for_label }}">{{ campo.label }}</label>{{ campo }}
+  {% endif %}
+  {% if campo.help_text %}<div class="form-text">{{ campo.help_text }}</div>{% endif %}
+  {% for e in campo.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+</div>{% endif %}

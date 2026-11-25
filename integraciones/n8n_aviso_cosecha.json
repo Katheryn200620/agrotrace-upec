@@ -1,0 +1,32 @@
+{
+  "name": "Aviso de cosecha – Procedencia hortofrutícola UPEC",
+  "nodes": [
+    {
+      "parameters": { "httpMethod": "POST", "path": "aviso-cosecha", "responseMode": "onReceived", "options": {} },
+      "id": "a1", "name": "Webhook cosecha", "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [240, 300],
+      "webhookId": "aviso-cosecha"
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json.body || $input.first().json;\nreturn [{ json: {\n  asunto: `Nueva cosecha ${d.codigo}`,\n  mensaje: `Se registró la cosecha ${d.codigo}\\nParcela: ${d.parcela}\\nProducto: ${d.producto}\\nCantidad: ${d.cantidad_kg} kg\\nFecha: ${d.fecha}\\nResponsable: ${d.responsable}\\n\\nPreparar la recepción en planta.`\n}}];"
+      },
+      "id": "a2", "name": "Armar mensaje", "type": "n8n-nodes-base.code", "typeVersion": 2, "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "trazabilidad@upec.edu.ec",
+        "toEmail": "planta.hortofruticola@upec.edu.ec",
+        "subject": "={{ $json.asunto }}",
+        "emailFormat": "text",
+        "text": "={{ $json.mensaje }}",
+        "options": {}
+      },
+      "id": "a3", "name": "Avisar a la planta", "type": "n8n-nodes-base.emailSend", "typeVersion": 2.1, "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Webhook cosecha": { "main": [[{ "node": "Armar mensaje", "type": "main", "index": 0 }]] },
+    "Armar mensaje": { "main": [[{ "node": "Avisar a la planta", "type": "main", "index": 0 }]] }
+  },
+  "settings": {}
+}

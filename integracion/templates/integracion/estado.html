@@ -1,0 +1,30 @@
+{% extends "base.html" %}{% load agro %}
+{% block contenido %}
+<header class="encabezado-area"><div class="d-flex gap-3"><span class="sello-area"><i class="bi bi-plug"></i></span>
+  <div><div class="area-etq">Área 12 · Administración del sistema</div><h2>Integración ERP (Odoo)</h2>
+  <p>AgroTrace registra la procedencia; Odoo lleva compras, inventario, ventas y la tienda en línea. Esta página envía los datos a Odoo por su API XML-RPC.</p></div></div>
+  <div class="d-flex gap-2 flex-wrap">
+    <form method="post" action="{% url 'integracion:ejecutar' %}">{% csrf_token %}<input type="hidden" name="modo" value="prueba"><button class="btn btn-secundario btn-sm"><i class="bi bi-plug me-1"></i>Probar conexión</button></form>
+    <form method="post" action="{% url 'integracion:ejecutar' %}" class="d-flex gap-2 align-items-center" data-confirmar="¿Enviar los datos a Odoo ahora?">{% csrf_token %}<input type="hidden" name="modo" value="sincronizacion">
+      <label class="small d-flex gap-1 align-items-center"><input type="checkbox" class="form-check-input mt-0" name="existencias" value="1"> con existencias</label>
+      <button class="btn btn-primario btn-sm"><i class="bi bi-arrow-repeat me-1"></i>Sincronizar ahora</button></form>
+  </div></header>
+<div class="row g-3 mb-3">
+  <div class="col-lg-5"><div class="tarjeta h-100"><div class="tarjeta-titulo"><h2><i class="bi bi-sliders"></i> Conexión configurada</h2>
+    {% if ultima_ok %}<span class="etq etq-verde">Última conexión correcta {{ ultima_ok.fecha|date:"d/m H:i" }}</span>{% else %}<span class="etq etq-ambar">Sin conexión comprobada</span>{% endif %}</div>
+    <dl class="row dato mb-0"><div class="col-sm-6"><dt>Dirección (ODOO_URL)</dt><dd>{{ url }}</dd></div><div class="col-sm-6"><dt>Base de datos</dt><dd>{{ db }}</dd></div>
+      <div class="col-sm-6"><dt>Usuario</dt><dd>{{ usuario }}</dd></div><div class="col-sm-6"><dt>Contraseña o clave API</dt><dd>{% if clave %}Configurada (oculta){% else %}Falta{% endif %}</dd></div></dl>
+    <p class="small text-secundario mb-0">Se cambian en el archivo <code>.env</code>. Odoo Community (gratuito, local) permite la API externa; en Odoo en línea solo el plan Custom la incluye.</p></div></div>
+  <div class="col-lg-7"><div class="tarjeta h-100"><div class="tarjeta-titulo"><h2><i class="bi bi-arrow-left-right"></i> Qué se envía</h2></div>
+    <div class="table-responsive"><table class="table tabla"><thead><tr><th>AgroTrace</th><th>Odoo</th><th>Enlazados</th></tr></thead><tbody>
+      {% for nombre, n, total in enlazados %}<tr><td>{{ nombre }}</td><td>{% if nombre == "Productos" %}product.product (GTIN = código de barras, por lote, tienda){% elif nombre == "Clientes" %}res.partner (cliente){% elif nombre == "Lotes" %}stock.lot (con el enlace del QR){% else %}sale.order (pedido de venta){% endif %}</td><td>{{ n }} de {{ total }}</td></tr>{% endfor %}
+      <tr><td>Productores</td><td>res.partner (proveedor)</td><td>–</td></tr><tr><td>Cosechas recibidas</td><td>purchase.order (compra)</td><td>–</td></tr>
+      <tr><td>Existencias (opcional)</td><td>stock.quant por lote</td><td>–</td></tr></tbody></table></div></div></div>
+</div>
+<div class="tarjeta"><div class="tarjeta-titulo"><h2><i class="bi bi-clock-history"></i> Historial</h2></div>
+  <div class="table-responsive"><table class="table tabla"><thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Resultado</th><th>Detalle</th></tr></thead><tbody>
+  {% for h in historial %}<tr><td>{{ h.fecha|valor }}</td><td>{{ h.usuario|default:"Terminal" }}</td><td>{{ h.get_modo_display }}</td>
+    <td>{% if h.exito %}<span class="etq etq-verde">Correcto</span>{% else %}<span class="etq etq-rojo">Error</span>{% endif %}</td>
+    <td class="small">{% if h.resumen %}{% for k, v in h.resumen.items %}{% if v and k != "avisos" %}{{ v }} {{ k }} · {% endif %}{% endfor %}{% else %}{{ h.detalle|default:h.version_odoo|truncatechars:120 }}{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="5"><div class="vacio"><i class="bi bi-plug"></i>Todavía no se ha probado la conexión. Instale Odoo, configure el .env y pulse «Probar conexión».</div></td></tr>{% endfor %}</tbody></table></div></div>
+{% endblock %}

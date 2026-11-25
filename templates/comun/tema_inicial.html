@@ -1,0 +1,7 @@
+<script>
+  /* Aplica el tema de color guardado antes de dibujar la página (evita el parpadeo). */
+  try {
+    var t = localStorage.getItem("agro-tema");
+    if (t) { document.documentElement.dataset.tema = t; if (t === "noche") document.documentElement.dataset.bsTheme = "dark"; }
+  } catch (e) {}
+</script>

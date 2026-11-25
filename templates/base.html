@@ -1,0 +1,96 @@
+{% load static agro %}<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}{{ titulo|default:"Inicio" }}{% endblock %} · AgroTrace-UPEC</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='4' fill='%23B4552F'/><path d='M8 3c-3 2-3 6 0 10 3-4 3-8 0-10z' fill='%23FCEEDD'/></svg>">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/estilos.css' %}?v=20261125">
+  {% include "comun/tema_inicial.html" %}
+  {% block cabeza %}{% endblock %}
+</head>
+<body data-url-mensaje="{% url 'asistente:mensaje' %}" data-url-voz="{% url 'asistente:registrar_voz' %}" data-url-buscar="{% url 'buscar' %}">
+{% with ruta=request.path %}
+<nav class="menu" aria-label="Menú principal">
+  <a href="{% url 'inicio' %}" class="marca">
+    <span class="logo"><i class="bi bi-flower3"></i></span>
+    <span><strong>AgroTrace-UPEC</strong><small>Procedencia hortofrutícola</small></span>
+  </a>
+  <a class="item item-inicio {% if ruta == '/' %}activo{% endif %}" href="{% url 'inicio' %}"><i class="bi bi-house-door"></i> Inicio</a>
+  <a class="item item-inicio {% if ruta == '/panel-procedencia/' %}activo{% endif %}" href="{% url 'panel_procedencia' %}"><i class="bi bi-speedometer2"></i> Panel de procedencia</a>
+  {% for g in menu_grupos %}
+    {% with abierto=g.items|grupo_activo:ruta %}
+    <div class="area-menu{% if abierto %} abierta{% endif %}">
+      <button class="area-cab" type="button" aria-expanded="{% if abierto %}true{% else %}false{% endif %}" data-area-menu>
+        <span class="area-num">{{ g.n }}</span><i class="bi {{ g.icono }}"></i><span class="area-nombre">{{ g.nombre }}</span><i class="bi bi-chevron-down flecha"></i>
+      </button>
+      <div class="area-items">
+        {% for it in g.items %}
+          <a class="item {% if ruta|es_activo:it.url %}activo{% endif %}" href="{{ it.url }}"{% if it.externo %} target="_blank" rel="noopener"{% endif %}><i class="bi {{ it.icono }}"></i> {{ it.texto }}</a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endwith %}
+  {% endfor %}
+  <div class="pie">UPEC · Carrera de Logística y Transporte<br>TIC's Aplicadas a la Logística</div>
+</nav>
+{% endwith %}
+
+<div class="contenido">
+  <header class="barra">
+    <button class="btn btn-secundario btn-sm btn-menu" data-abrir-menu aria-label="Abrir menú"><i class="bi bi-list"></i></button>
+    <h1 class="pagina">{% block pagina %}{{ titulo }}{% endblock %}</h1>
+    <form class="buscador" action="{% url 'buscar' %}" method="get" role="search">
+      <i class="bi bi-search"></i>
+      <input class="form-control form-control-sm" name="q" placeholder="Buscar lote o cosecha (ej. H26101201)" aria-label="Buscar lote">
+    </form>
+    <button class="btn btn-icono" type="button" data-voz title="Control por voz" aria-label="Activar control por voz"><i class="bi bi-mic"></i></button>
+    <a class="btn btn-icono position-relative" href="{% url 'dashboard:alertas' %}" title="Alertas y notificaciones" aria-label="Alertas: {{ n_alertas }}">
+      <i class="bi bi-bell"></i>{% if n_alertas %}<span class="globo">{{ n_alertas }}</span>{% endif %}</a>
+    <div class="dropdown">
+      <button class="btn btn-icono" data-bs-toggle="dropdown" aria-expanded="false" title="Cambiar colores" aria-label="Cambiar colores">
+        <i class="bi bi-palette"></i></button>
+      {% include "comun/selector_tema.html" %}
+    </div>
+    <div class="dropdown">
+      <a href="#" class="usuario" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="avatar">{{ request.user|iniciales }}</span>
+        <span class="texto"><span class="nombre d-block">{{ request.user.get_full_name|default:request.user.username }}</span>
+          <span class="area">{{ area_usuario }}</span></span>
+        <i class="bi bi-chevron-down small text-secundario"></i>
+      </a>
+      <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+        <li><span class="dropdown-item-text small text-secundario">{{ rol_usuario }}</span></li>
+        <li><a class="dropdown-item" href="{% url 'cuentas:perfil' %}"><i class="bi bi-person me-2"></i>Mi perfil</a></li>
+        <li><a class="dropdown-item" href="{% url 'cuentas:mi_historial' %}"><i class="bi bi-clock-history me-2"></i>Mi historial</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><form method="post" action="{% url 'logout' %}">{% csrf_token %}
+          <button class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión</button></form></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="pagina-cuerpo">
+    {% if request.session.simulacro %}
+      <div class="alert alert-info d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span><i class="bi bi-stopwatch me-1"></i> <strong>Simulacro de retiro en curso.</strong> Lote a rastrear: <strong>{{ request.session.simulacro.codigo }}</strong></span>
+        <form method="post" action="{% url 'trazabilidad:simulacro_terminar' %}">{% csrf_token %}<button class="btn btn-sm btn-primario">Terminar simulacro</button></form>
+      </div>
+    {% endif %}
+    {% for m in messages %}
+      <div class="alert alert-{% if m.tags == 'error' %}danger{% else %}{{ m.tags }}{% endif %} alert-dismissible fade show" role="alert">
+        {{ m }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+      </div>
+    {% endfor %}
+    {% block contenido %}{% endblock %}
+  </main>
+</div>
+{% include "asistente/widget.html" %}
+<script src="{% static 'vendor/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/app.js' %}?v=20261125"></script>
+<script src="{% static 'js/asistente.js' %}?v=20261125"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block contenido %}
+<header class="encabezado-area"><div class="d-flex gap-3"><span class="sello-area"><i class="bi bi-map"></i></span>
+  <div><div class="area-etq">Área 12 · Administración del sistema</div><h2>Funciones en preparación</h2>
+  <p>Funciones que la guía menciona y que todavía no están construidas. No aparecen en el menú para no presentarlas como si funcionaran.</p></div></div></header>
+<div class="tarjeta"><div class="table-responsive"><table class="table tabla">
+<thead><tr><th>Función</th><th>Área</th><th>Qué falta</th><th>Cómo se puede hacer</th></tr></thead><tbody>
+<tr><td>Planificación de la producción</td><td>3. Producción agrícola</td><td>Modelo de plan de siembra (cultivo, fecha prevista, kg esperados)</td><td>Nuevo modelo enlazado a Parcela; comparar plan frente a cosecha real</td></tr>
+<tr><td>Control de calidad en campo</td><td>3. Producción agrícola</td><td>Formulario de inspección antes de cosechar</td><td>Evento de trazabilidad tipo «inspección en campo» con lista de verificación</td></tr>
+<tr><td>Compras de insumos</td><td>2. Abastecimiento</td><td>Modelo de compra de insumos y proveedor de insumos</td><td>Se puede llevar en Odoo (app Compras) y enlazar por API</td></tr>
+<tr><td>Lavado y secado como etapas separadas</td><td>6. Transformación</td><td>Hoy se registran como «proceso aplicado» o evento manual</td><td>Agregar tipos de evento propios si la planta los realiza</td></tr>
+<tr><td>Sensores de temperatura en cámara</td><td>5. Almacenamiento</td><td>Equipo físico (sensor) y conexión</td><td>El modelo de eventos ya admite origen «sensor»; n8n puede recibir lecturas</td></tr>
+<tr><td>Clasificación con visión artificial</td><td>4. Recepción</td><td>Modelo entrenado con fotos reales</td><td>El campo foto y el método «modelo de visión artificial» ya existen para reunir el dataset</td></tr>
+<tr><td>Conexión a un Odoo real</td><td>12. Administración</td><td>Una instancia de Odoo con API (Community local o plan Custom)</td><td>Configurar ODOO_* en .env y usar «Integración ERP»</td></tr>
+</tbody></table></div></div>
+{% endblock %}

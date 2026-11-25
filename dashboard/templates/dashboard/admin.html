@@ -1,0 +1,144 @@
+{% extends "base.html" %}{% load static agro humanize %}
+{% block contenido %}
+<section class="portada">
+  {% include "comun/paisaje.html" %}
+  <div class="portada-texto">
+    <div class="fecha">{{ hoy|date:"l j \d\e F \d\e Y"|capfirst }} · Planta Hortofrutícola UPEC</div>
+    <h2>{{ saludo }}, {{ request.user.get_full_name|default:request.user.username }}</h2>
+    <p class="rol"><i class="bi bi-person-badge me-1"></i>{{ rol }}</p>
+    <p>Así va la procedencia de los productos, desde la parcela hasta su destino.</p>
+    <div class="acciones">
+      <a href="{% url 'cosechas:cosecha_crear' %}" class="btn btn-primario btn-sm"><i class="bi bi-plus-lg me-1"></i>Registrar cosecha</a>
+      <a href="{% url 'cosechas:recepcion_crear' %}" class="btn btn-secundario btn-sm"><i class="bi bi-box-arrow-in-down me-1"></i>Registrar recepción</a>
+      <a href="{% url 'dashboard:area_trazabilidad' %}" class="btn btn-secundario btn-sm"><i class="bi bi-diagram-3 me-1"></i>Consultar trazabilidad</a>
+      <a href="{% url 'dashboard:area_reportes' %}" class="btn btn-secundario btn-sm"><i class="bi bi-bar-chart-line me-1"></i>Ver reportes</a>
+    </div>
+  </div>
+  <div class="cifras">
+    <div class="cifra"><strong>{{ kpi.trazabilidad_pct }} %</strong><span>trazabilidad completa</span></div>
+    <div class="cifra"><strong>{{ kpi.aceptacion_pct }} %</strong><span>aceptación · {{ kpi.rechazo_pct }} % rechazo</span></div>
+    <div class="cifra"><strong>{{ kpi.pendientes }}</strong><span>registros por revisar</span></div>
+  </div>
+</section>
+
+<div class="row g-3 mb-3 row-cols-1 row-cols-sm-2 row-cols-xl-4">
+  <div class="col"><div class="kpi verde">
+    <div class="cabeza"><span class="icono"><i class="bi bi-flower1"></i></span><span class="etiqueta">Kilos cosechados</span></div>
+    <div class="valor">{{ kpi.kg_cosechados|floatformat:0|intcomma }}<small>kg</small></div>
+    <div class="pie-kpi">en {{ kpi.cosechas }} cosechas · últimas 8 semanas</div>
+    <div class="mini-caja"><canvas class="mini" data-serie="kg"></canvas></div></div></div>
+  <div class="col"><div class="kpi azul">
+    <div class="cabeza"><span class="icono"><i class="bi bi-box-seam"></i></span><span class="etiqueta">Lotes{% if hay_filtros %} (filtrados){% endif %}</span></div>
+    <div class="valor">{{ kpi.lotes }}</div>
+    <div class="pie-kpi">lotes creados por semana</div>
+    <div class="mini-caja"><canvas class="mini" data-serie="lotes" data-tipo="bar"></canvas></div></div></div>
+  <div class="col"><div class="kpi ambar">
+    <div class="cabeza"><span class="icono"><i class="bi bi-diagram-3"></i></span><span class="etiqueta">Eventos de trazabilidad</span></div>
+    <div class="valor">{{ kpi.eventos }}</div>
+    <div class="pie-kpi">registrados por semana</div>
+    <div class="mini-caja"><canvas class="mini" data-serie="eventos"></canvas></div></div></div>
+  <div class="col"><div class="kpi tierra">
+    <div class="cabeza"><span class="icono"><i class="bi bi-qr-code-scan"></i></span><span class="etiqueta">Escaneos del QR</span></div>
+    <div class="valor">{{ kpi.escaneos }}</div>
+    <div class="pie-kpi">consultas de clientes por semana</div>
+    <div class="mini-caja"><canvas class="mini" data-serie="escaneos" data-tipo="bar"></canvas></div></div></div>
+</div>
+
+{% if vacio %}<div class="alert alert-info"><i class="bi bi-info-circle me-1"></i>Todavía no hay registros. Los indicadores muestran cero hasta que se registren productores, parcelas y cosechas.
+  <a href="{% url 'asistente:agentes' %}" class="alert-link">Use los agentes guiados</a> para empezar paso a paso.</div>{% endif %}
+<div class="tarjeta p-0 mb-3 resumen">
+  <div class="dato-r"><i class="bi bi-people"></i><div><strong>{{ kpi.productores }}</strong><span>Productores registrados</span></div></div>
+  <div class="dato-r"><i class="bi bi-geo-alt"></i><div><strong>{{ kpi.parcelas_activas }}</strong><span>Parcelas activas</span></div></div>
+  <div class="dato-r"><i class="bi bi-basket"></i><div><strong>{{ kpi.cosechas_mes }}</strong><span>Cosechas este mes</span></div></div>
+  <div class="dato-r"><i class="bi bi-box-arrow-in-down"></i><div><strong>{{ kpi.kg_recibidos|floatformat:0|intcomma }} kg</strong><span>Productos recibidos</span></div></div>
+  <div class="dato-r"><i class="bi bi-boxes"></i><div><strong>{{ kpi.inventario }}</strong><span>Lotes disponibles en inventario</span></div></div>
+  <div class="dato-r azul"><i class="bi bi-truck"></i><div><strong>{{ kpi.despachos }}</strong><span>Despachos realizados</span></div></div>
+  <div class="dato-r {% if kpi.entregas_pendientes %}ambar{% endif %}"><i class="bi bi-hourglass-split"></i><div><strong>{{ kpi.entregas_pendientes }}</strong><span>Entregas pendientes</span></div></div>
+  <a class="dato-r {% if kpi.alertas %}rojo{% endif %}" href="{% url 'dashboard:alertas' %}"><i class="bi bi-bell"></i><div><strong>{{ kpi.alertas }}</strong><span>Alertas de inventario o calidad</span></div></a>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-6 col-xl-3"><div class="tarjeta h-100"><div class="tarjeta-titulo"><h2><i class="bi bi-pie-chart"></i> Aceptación y rechazo</h2><span class="small text-secundario">kg</span></div>
+    <div style="height:200px"><canvas id="g-aceptacion"></canvas></div></div></div>
+  <div class="col-lg-6 col-xl-3"><div class="tarjeta h-100"><div class="tarjeta-titulo"><h2><i class="bi bi-truck"></i> Despachos y entregas</h2></div>
+    <div style="height:200px"><canvas id="g-despachos"></canvas></div></div></div>
+  <div class="col-xl-6"><div class="tarjeta h-100"><div class="tarjeta-titulo"><h2><i class="bi bi-grid-3x3-gap"></i> Áreas del sistema</h2></div>
+    <div class="row g-2">{% for g in menu_grupos %}{% with it=g.items.0 %}<div class="col-6 col-md-4"><a href="{{ g.panel }}" class="acceso"><i class="bi {{ g.icono }}"></i><span><small class="d-block text-secundario">Área {{ g.n }}</small>{{ g.nombre }}</span></a></div>{% endwith %}{% endfor %}</div></div></div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-xl-5">
+    <div class="tarjeta h-100">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-bar-chart"></i> Rechazo por parcela</h2><span class="small text-secundario"><span class="etq etq-ambar">10 % o más</span></span></div>
+      <div style="height:240px"><canvas id="g-rechazo"></canvas></div>
+    </div>
+  </div>
+  <div class="col-xl-4">
+    <div class="tarjeta h-100">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-graph-up"></i> Cosechas por semana</h2></div>
+      <div style="height:240px"><canvas id="g-semanas"></canvas></div>
+    </div>
+  </div>
+  <div class="col-xl-3">
+    <div class="tarjeta h-100 text-center">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-list-check"></i> Trazabilidad completa</h2></div>
+      <div style="height:130px;position:relative"><canvas id="g-trazabilidad"></canvas>
+        <div class="medidor-valor">{{ kpi.trazabilidad_pct }} %</div></div>
+      <p class="small text-secundario mt-2 mb-3">de los lotes tienen todos sus eventos, de la cosecha al despacho</p>
+      <div style="height:150px"><canvas id="g-estados"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-xl-8">
+    <div class="tarjeta mb-3">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-funnel"></i> Lotes</h2><a href="{% url 'lotes:lote_lista' %}" class="small">Ver todos</a></div>
+      <form method="get" class="row g-2 mb-3">
+        <div class="col-6 col-md-4 col-xl-2"><input name="lote" value="{{ filtros.lote }}" class="form-control form-control-sm" placeholder="Código de lote"></div>
+        <div class="col-6 col-md-4 col-xl-2"><select name="producto" class="form-select form-select-sm"><option value="">Producto</option>{% for p in productos %}<option value="{{ p.pk }}" {% if filtros.producto == p.pk|stringformat:'s' %}selected{% endif %}>{{ p.nombre }}</option>{% endfor %}</select></div>
+        <div class="col-6 col-md-4 col-xl-2"><select name="productor" class="form-select form-select-sm"><option value="">Productor</option>{% for p in productores %}<option value="{{ p.pk }}" {% if filtros.productor == p.pk|stringformat:'s' %}selected{% endif %}>{{ p.nombre }}</option>{% endfor %}</select></div>
+        <div class="col-6 col-md-4 col-xl-2"><input name="ubicacion" value="{{ filtros.ubicacion }}" class="form-control form-control-sm" placeholder="Cantón o parroquia"></div>
+        <div class="col-6 col-md-4 col-xl-2"><select name="estado" class="form-select form-select-sm"><option value="">Estado</option>{% for v, t in estados_lote %}<option value="{{ v }}" {% if filtros.estado == v %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></div>
+        <div class="col-6 col-md-4 col-xl-2 d-flex gap-1"><input type="date" name="desde" value="{{ filtros.desde }}" class="form-control form-control-sm" title="Desde"></div>
+        <div class="col-12 d-flex gap-2"><button class="btn btn-sm btn-primario">Filtrar</button>{% if hay_filtros %}<a href="?" class="btn btn-sm btn-secundario">Quitar filtros</a>{% endif %}</div>
+      </form>
+      <div class="table-responsive"><table class="table tabla">
+        <thead><tr><th>Lote</th><th>Producto</th><th>Disponible</th><th>Estado</th><th>Trazabilidad</th></tr></thead>
+        <tbody>
+        {% for l in lotes_tabla %}
+          <tr data-href="{{ l.get_absolute_url }}"><td><strong>{{ l.codigo }}</strong></td><td>{{ l.producto.nombre }}</td>
+            <td>{{ l.cantidad_disponible|valor }} {{ l.unidad }}</td><td>{{ l.get_estado_display|etiqueta }}</td>
+            <td style="min-width:120px"><div class="progreso {% if l.completitud < 100 %}ambar{% endif %}"><span style="width:{{ l.completitud }}%"></span></div><small class="text-secundario">{{ l.completitud }} %</small></td></tr>
+        {% empty %}<tr><td colspan="5"><div class="vacio"><i class="bi bi-inbox"></i>No hay lotes con esos filtros.</div></td></tr>{% endfor %}
+        </tbody></table></div>
+    </div>
+  </div>
+  <div class="col-xl-4">
+    <div class="tarjeta mb-3">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-lightning"></i> Accesos rápidos</h2></div>
+      <div class="row g-2">{% for url, texto, icono in accesos %}<div class="col-6"><a href="{{ url }}" class="acceso"><i class="bi {{ icono }}"></i>{{ texto }}</a></div>{% endfor %}</div>
+    </div>
+    {% if pendientes %}
+    <div class="tarjeta mb-3">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-hourglass-split"></i> Pendientes de revisión</h2></div>
+      <ul class="list-unstyled mb-0 small">{% for nombre, n in pendientes %}<li class="d-flex justify-content-between py-1 border-bottom"><span>{{ nombre|capfirst }}</span><span class="etq etq-ambar">{{ n }}</span></li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+    <div class="tarjeta">
+      <div class="tarjeta-titulo"><h2><i class="bi bi-activity"></i> Actividad reciente</h2><a href="{% url 'cuentas:auditoria' %}" class="small">Auditoría</a></div>
+      <ul class="list-unstyled mb-0">
+        {% for a in actividad %}
+          <li class="py-2 border-bottom small"><div class="d-flex justify-content-between"><strong>{{ a.usuario_nombre }}</strong><span class="text-secundario">{{ a.fecha|timesince }}</span></div>
+            <span class="text-secundario">{{ a.get_accion_display }}{% if a.objeto %} · {{ a.objeto|truncatechars:42 }}{% endif %}</span></li>
+        {% empty %}<li class="text-secundario small">Sin actividad todavía.</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{{ graficos|json_script:"datos-graficos" }}
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'vendor/chart.umd.js' %}"></script>
+<script>AgroGraficos(JSON.parse(document.getElementById("datos-graficos").textContent));</script>
+{% endblock %}
