@@ -16,7 +16,7 @@ En **Consoles → Bash** pegue, una línea a la vez:
 
 ```bash
 git clone https://github.com/SU_USUARIO/agrotrace-upec.git
-cd agrotrace-upec
+cd agrotrace-upec/aplicacion
 mkvirtualenv --python=/usr/bin/python3.13 agrotrace
 pip install -r requirements.txt
 cp .env.example .env
@@ -50,15 +50,15 @@ python manage.py collectstatic --noinput
 ## 5. Crear la aplicación web
 1. Pestaña **Web** → **Add a new web app** → Next → **Manual configuration** → **Python 3.13** → Next.
 2. En **Virtualenv** escriba: `/home/SU_USUARIO/.virtualenvs/agrotrace`
-3. En **Source code**: `/home/SU_USUARIO/agrotrace-upec`
+3. En **Source code**: `/home/SU_USUARIO/agrotrace-upec/aplicacion`
 4. Abra **WSGI configuration file**, borre todo y pegue el contenido de `despliegue/pythonanywhere_wsgi.py`
    (cambiando `TU_USUARIO`). Pulse **Save**.
 5. En **Static files** agregue dos filas:
 
 | URL | Directory |
 |---|---|
-| `/static/` | `/home/SU_USUARIO/agrotrace-upec/staticfiles` |
-| `/media/` | `/home/SU_USUARIO/agrotrace-upec/media` |
+| `/static/` | `/home/SU_USUARIO/agrotrace-upec/aplicacion/staticfiles` |
+| `/media/` | `/home/SU_USUARIO/agrotrace-upec/aplicacion/media` |
 
 6. Active **Force HTTPS**.
 7. Pulse el botón verde **Reload** y abra `https://SU_USUARIO.pythonanywhere.com`.
@@ -67,7 +67,7 @@ python manage.py collectstatic --noinput
 En su computador: `git add .`, `git commit -m "cambio"`, `git push`. En la consola Bash de PythonAnywhere:
 
 ```bash
-cd ~/agrotrace-upec
+cd ~/agrotrace-upec/aplicacion
 workon agrotrace
 git pull
 python manage.py migrate

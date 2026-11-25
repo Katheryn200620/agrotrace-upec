@@ -62,6 +62,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -177,3 +178,11 @@ IA_URL = env("IA_URL", "")
 IA_MODELO = env("IA_MODELO", "")
 IA_API_KEY = env("IA_API_KEY", "")
 IA_TIEMPO = int(env("IA_TIEMPO", "20"))
+
+# --- Archivos estáticos al publicar en internet (Render) -------------------
+# WhiteNoise permite que Django sirva sus propios archivos estáticos sin
+# necesitar Nginx. Se activa solo si la librería está instalada.
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+}

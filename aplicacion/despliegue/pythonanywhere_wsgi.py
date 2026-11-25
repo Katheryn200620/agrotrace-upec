@@ -3,7 +3,7 @@
 import os
 import sys
 
-ruta = "/home/TU_USUARIO/agrotrace-upec"
+ruta = "/home/TU_USUARIO/agrotrace-upec/aplicacion"
 if ruta not in sys.path:
     sys.path.insert(0, ruta)
 

@@ -1,0 +1,47 @@
+# Configuración para publicar AgroTrace-UPEC en Render.
+# Render lee este archivo al crear un "Blueprint" desde el repositorio de GitHub.
+# La base de datos es PostgreSQL en Supabase: sus datos se cargan como variables
+# de entorno (las marcadas con sync:false se piden al crear el servicio).
+
+services:
+  - type: web
+    name: agrotrace-upec
+    runtime: python
+    plan: free
+    rootDir: aplicacion
+    buildCommand: bash build.sh
+    startCommand: gunicorn agrotrace.wsgi:application
+    healthCheckPath: /ingresar/
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.4"
+
+      # --- Django ---
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "0"
+      - key: DJANGO_ALLOWED_HOSTS
+        sync: false            # agrotrace-upec.onrender.com
+      - key: DJANGO_CSRF_TRUSTED_ORIGINS
+        sync: false            # https://agrotrace-upec.onrender.com
+      - key: SITE_URL
+        sync: false            # https://agrotrace-upec.onrender.com
+
+      # --- Base de datos: Supabase (PostgreSQL) ---
+      - key: DB_ENGINE
+        value: postgres
+      - key: DB_NAME
+        value: postgres
+      - key: DB_USER
+        sync: false            # postgres.ecarwdrpfshfgaiiyhpy
+      - key: DB_PASSWORD
+        sync: false            # la contraseña de la base de datos de Supabase
+      - key: DB_HOST
+        sync: false            # aws-0-us-east-2.pooler.supabase.com  (confirmar en Supabase)
+      - key: DB_PORT
+        value: "5432"
+
+      # --- QR ---
+      - key: GS1_PREFIJO_EMPRESA
+        value: "7861234"
