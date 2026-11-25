@@ -1,0 +1,41 @@
+AGROTRACE-UPEC · ENTREGA FINAL (TIC's Aplicadas a la Logística, PAO 2026B)
+Autoras: Dayanara Scarlet Vaca Bravo y Katheryn Maylin Cumbal Narváez · Docente: Ing. Omar Alpala
+
+CÓMO ABRIR EL APLICATIVO (Windows, terminal de VS Code, dentro de la carpeta "aplicacion")
+  python -m venv .venv
+  .venv\Scripts\activate
+  pip install -r requirements.txt
+  copy .env.example .env
+  python manage.py migrate
+  python manage.py cargar_datos_demo
+  python manage.py runserver
+  -> http://127.0.0.1:8000   usuario: admin   clave: upec2026
+  Pruebas automáticas: python manage.py test   (59 pruebas, resultado OK)
+
+PUBLICAR EN UN ENLACE CON SU BASE DE DATOS (rúbrica: aplicativo web funcional en link)
+  Guía paso a paso: aplicacion/despliegue/PUBLICAR_EN_PYTHONANYWHERE.md (cuenta gratuita PythonAnywhere)
+  Resultado: https://SU_USUARIO.pythonanywhere.com  (escriba el enlace real en el Informe, sección 3)
+
+SI LA PÁGINA SE VE SIN COLORES: recargue con Ctrl + F5 (el navegador guardaba los estilos viejos).
+
+REQUERIMIENTO -> DÓNDE ESTÁ LA EVIDENCIA
+  Página de Inicio (catálogo) .......... primera página al ingresar; capturas 43 y 44
+  R1 Trazabilidad con identificadores ... Ficha del lote y QR; capturas 20 y 39; Informe sección 5
+  R1 Chatbot ............................ Área 1 -> Asistente virtual; captura 33; Informe sección 6
+  R1 Agentes guiados .................... Área 1 -> Agentes guiados; capturas 23 y 24; Informe sección 7
+  R1 Control por voz .................... Micrófono de la barra superior; captura 25; Informe sección 8
+  R1 APIs ............................... /api/v1/; documentacion/Documentacion_API.md; Informe sección 9
+  R1 Analítica de datos ................. 12 paneles por área; capturas 02 a 14; Informe sección 10
+  R1 Sistema ERP (Odoo) ................. Área 12 -> Integración ERP; captura 29; Informe sección 11
+  R2 Prototipo físico ................... prototipo/documentacion_prototipo; etiquetas QR (captura 22)
+  R3 Pruebas con usuarios ............... pruebas/ (encuesta, matriz con fórmulas, formato de resultados)
+  R4 Exposición de resultados ........... documentacion/Informe_Resultados.docx; evidencias/
+
+QUÉ FALTA HACER (NO SE INVENTÓ NINGÚN RESULTADO)
+  - Aplicar la prueba con usuarios y llenar Matriz_Validacion.xlsx y Resultados_Usabilidad.docx.
+  - Tomar fotografías y grabar videos (evidencias/fotografias y evidencias/videos).
+  - Armar el prototipo físico con las etiquetas impresas.
+  - Conectar un Odoo real (Odoo Community) y, si se desea, IA real (Ollama). Hasta ahora se probaron con simuladores.
+  - Ejecutar las pruebas de la hoja "Pendientes" de Pruebas_Tecnicas.xlsx (voz y cámara reales, Odoo real, datos reales).
+  - Publicar el aplicativo en PythonAnywhere y escribir el enlace en el informe.
+  - Abrir el informe en Word y actualizar el índice (clic derecho -> Actualizar campos).

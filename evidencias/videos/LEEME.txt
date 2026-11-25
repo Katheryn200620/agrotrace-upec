@@ -1,0 +1,11 @@
+VIDEOS (completar con grabaciones REALES)
+
+1. Recorrido general: ingreso, menú de 12 áreas y panel general (2 min).
+2. Trazabilidad: cosecha -> lote -> QR -> consulta en el celular (3 min).
+3. Asistente virtual y agente guiado (2 min).
+4. Control por voz en Chrome (1 min).
+5. API (token y consulta) e integración con Odoo (2 min).
+6. Fragmento de la prueba con un usuario, con su permiso (2 min).
+
+Grabe la pantalla en Windows con Win + Alt + R (Xbox Game Bar) o con OBS Studio.
+Si el archivo es muy grande, súbalo a Google Drive o YouTube (no listado) y pegue el enlace en el informe (sección 16).

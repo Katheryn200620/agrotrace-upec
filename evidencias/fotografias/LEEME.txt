@@ -1,0 +1,14 @@
+FOTOGRAFÍAS (completar con fotos REALES)
+
+Guarde aquí las fotos tomadas durante la prueba con usuarios, el prototipo y la exposición.
+Nómbrelas así: 01_usuario_registrando_cosecha.jpg, 02_escaneo_qr_celular.jpg, ...
+
+Fotos sugeridas:
+1. Participante usando el aplicativo en la planta o el laboratorio.
+2. Consumidor escaneando el QR de una etiqueta con su celular.
+3. Pantalla del celular con la ficha pública del lote.
+4. Empaques con su etiqueta QR (prototipo).
+5. Maqueta de la cadena productor -> planta -> cliente.
+6. Equipo durante la exposición.
+
+Pida permiso antes de fotografiar a las personas (casilla en la encuesta).

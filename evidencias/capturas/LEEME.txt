@@ -1,0 +1,47 @@
+CAPTURAS DEL APLICATIVO (reales, tomadas el 24/11/2026 con datos de prueba)
+
+01 ingreso
+02 panel general
+03 indicadores generales
+04 area2 abastecimiento
+05 area3 produccion
+06 area4 recepcion
+07 area5 almacenamiento
+08 area6 transformacion
+09 area7 distribucion
+10 area8 comercial
+11 area9 trazabilidad
+12 area10 seguridad
+13 area11 analitica
+14 area12 administracion
+15 inventario
+16 entradas salidas
+17 ventas
+18 venta detalle
+19 cliente detalle
+20 ficha lote
+21 alertas
+22 etiquetas qr
+23 agentes guiados
+24 agente lote
+25 control voz
+26 api documentacion
+27 api navegable
+28 api trazabilidad lote
+29 integracion erp
+30 usuarios roles
+31 auditoria
+32 hoja de ruta
+33 asistente virtual
+34 asistente flotante
+35 voz escuchando
+36 temas de color
+37 operador comercial
+38 acceso denegado 403
+39 movil consulta publica
+40 movil operador lotes
+41 movil menu areas
+42 tableta panel comercial
+43 inicio catalogo
+44 inicio movil
+45 panel procedencia
